@@ -1,0 +1,81 @@
+{{> header title="New Product Created" }}
+<mj-body background-color="#ffffff">
+
+  <mj-section padding-bottom="20px">
+    <mj-text
+      align="center"
+      font-size="24px"
+      font-weight="bold"
+      color="#000000"
+      line-height="1.5"
+      padding="0"
+    >
+      <strong>New Product Created</strong>
+    </mj-text>
+  </mj-section>
+
+  <mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+  <mj-section padding-bottom="10px">
+    <mj-text font-size="18px" color="#000000" line-height="1.5" padding="0">
+      <strong>Hey,</strong><br/><br/>
+      A new product has just been created in your catalog. Here are the details:
+    </mj-text>
+  </mj-section>
+
+  <mj-section padding="10px 0 20px 0">
+    <mj-column>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Product Name:</strong> {{ name }}
+      </mj-text>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>SKU:</strong> {{ sku }}
+      </mj-text>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Created By:</strong> {{ creatorName }}
+      </mj-text>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Business Name:</strong> {{ businessName }}
+      </mj-text>
+
+      <!-- Optional: show productVariantId if needed for reference -->
+      <!--
+      <mj-text font-size="14px" color="#555555" line-height="1.6" padding="5px 0">
+        <strong>Product Variant ID:</strong> {{ productVariantId }}
+      </mj-text>
+      -->
+
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding-bottom="20px">
+    <mj-column>
+      <mj-button
+        font-family="Helvetica"
+        font-size="16px"
+        background-color="#F15A27"
+        color="white"
+        border-radius="10px"
+        width="100%"
+        height="50px"
+        padding="20px 0"
+        href="{{ productDashboardUrl }}"
+      >
+        View Product in Dashboard
+      </mj-button>
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding-bottom="20px">
+    <mj-text font-size="16px" color="#000000" line-height="1.6" padding="0">
+      If you weren’t expecting this product to be created or believe this was a mistake,
+      you can review and update it directly from your dashboard.<br/><br/>
+      <strong>Thank you,<br/>Techmandu Team</strong>
+    </mj-text>
+  </mj-section>
+
+{{> footer }}

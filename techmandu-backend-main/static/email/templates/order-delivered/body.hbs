@@ -1,0 +1,68 @@
+{{> header title="Order Delivered – [Order #{{order.code}}]" }}
+
+<mj-body background-color="#ffffff">
+  <mj-section padding-bottom="20px">
+    <mj-column>
+      <mj-text align="center" font-size="24px" font-weight="bold"  color="#000000" padding="0">
+        ✅ Order Delivered – [Order #{{order.code}}]
+      </mj-text>
+    </mj-column>
+  </mj-section>
+
+<mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+  <mj-section padding-top="10px">
+    <mj-column>
+      <mj-text font-size="20px" color="#000000" line-height="1.5" padding="0">
+        <strong>Your Order is Delivered!</strong><br/><br/>
+        <strong>Hi {{order.customer.firstName}},</strong><br/>
+        Great news! Your order has been successfully delivered. We hope you’re excited to receive your items! Here’s a quick summary:
+      </mj-text>
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding-top="20px">
+    <mj-column>
+      <mj-text font-size="20px" color="#000000" font-weight="bold" padding="0">
+        🧾 Order Details<br/><br/>
+      </mj-text>
+      <mj-text font-size="20px" color="#000000" padding="0" line-height="1.7">
+        <strong>Order Number:</strong> [#{{order.code}}]<br/>
+        <strong>Order Date:</strong> {{formatDate order.orderPlacedAt}}<br/><br/>
+        <strong>Subtotal:</strong> {{formatMoney order.subTotal order.currencyCode 'en'}}<br/>
+        <strong>Total:</strong> {{formatMoney order.total order.currencyCode 'en'}}
+      </mj-text>
+    </mj-column>
+  </mj-section>
+  
+<mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+  <mj-section padding-top="20px">
+    <mj-column>
+      <mj-text font-size="20px" color="#000000" font-weight="bold" padding="0">
+        🚚 Delivery Information<br/><br/>
+      </mj-text>
+      <mj-text font-size="20px" color="#000000" line-height="1.7" padding="0">
+        <strong>📍 Deliver to:</strong> {{order.shippingAddress.fullName}}, {{order.shippingAddress.streetLine1}}, {{order.shippingAddress.city}}, {{order.shippingAddress.country}}<br/>
+      </mj-text>
+    </mj-column>
+  </mj-section>
+  
+<mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+ 
+  <mj-section padding-top="20px">
+    <mj-column>
+      <mj-text font-size="20px" color="#000000" font-weight="bold" padding="0">
+        Need Help?
+      </mj-text>
+      <mj-text font-size="20px" color="#000000" line-height="1.7" padding="0">
+        If you have any questions, feel free to reply to this email or contact us at 
+        <a href="mailto:{{supportEmail}}" style="color: #000000; text-decoration: underline;">
+          {{supportEmail}}
+        </a>.<br/><br/>
+        💙 Thank you for choosing Techmandu. – we can’t wait for you to receive more order!
+      </mj-text>
+    </mj-column>
+  </mj-section>
+
+{{> footer }}

@@ -1,0 +1,92 @@
+.banner-image-wrapper {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.no-image-placeholder {
+    cursor: pointer;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    &:hover {
+        border-color: #0072ce;
+        background-color: #e8f4fd;
+    }
+
+    clr-icon {
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}
+
+.selected-image-container {
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fafafa;
+    transition: all 0.3s ease;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        border-color: #0072ce;
+        box-shadow: 0 2px 8px rgba(0, 114, 206, 0.2);
+    }
+}
+
+.banner-preview-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+}
+
+.error-message {
+    color: #c92100;
+    font-size: 12px;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+
+    .form-grid-span {
+        grid-column: 1 / -1;
+    }
+}
+
+.is-invalid {
+    border-color: #c92100 !important;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+.btn-block {
+    width: 100%;
+    display: block;
+}

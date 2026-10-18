@@ -1,0 +1,196 @@
+<!-- <div style="background: yellow; padding: 20px; margin: 20px;">
+    <h3>DEBUG INFO:</h3>
+    <p>Banners Observable: {{ banners$ ? 'EXISTS' : 'NULL' }}</p>
+    <p>Banners Count: {{ (banners$ | async)?.length || 'LOADING...' }}</p>
+    <pre>{{ (banners$ | async) | json }}</pre>
+</div>
+
+<vdr-page-block>
+    <vdr-action-bar>
+        <vdr-ab-left>
+            <vdr-action-bar-items locationId="banner-list"></vdr-action-bar-items>
+        </vdr-ab-left>
+        <vdr-ab-right>
+            <a class="btn btn-primary" [routerLink]="['./create']">
+                <clr-icon shape="plus"></clr-icon>
+                Create Banner
+            </a>
+        </vdr-ab-right>
+    </vdr-action-bar>
+
+    <vdr-data-table-2 
+        [items]="banners$ | async"
+        (itemClick)="onBannerClick($event)">
+        <vdr-dt2-column heading="Image" [optional]="false">
+            <ng-template let-banner="item">
+                <div class="banner-image-cell">
+                    <img 
+                        [src]="banner.image?.preview + '?preset=tiny'" 
+                        *ngIf="banner.image?.preview" 
+                        alt="{{ banner.title }}" 
+                        class="banner-thumbnail" />
+                    <div *ngIf="!banner.image?.preview" class="no-image-icon">
+                        <clr-icon shape="image" size="24"></clr-icon>
+                    </div>
+                </div>
+            </ng-template>
+        </vdr-dt2-column>
+        
+        <vdr-dt2-column heading="Title" [optional]="false" [sort]="'title'">
+            <ng-template let-banner="item">
+                <strong>{{ banner.title }}</strong>
+            </ng-template>
+        </vdr-dt2-column>
+        
+        <vdr-dt2-column heading="Description" [optional]="true">
+            <ng-template let-banner="item">
+                <span class="description-preview">{{ banner.description | slice:0:80 }}{{ banner.description.length > 80 ? '...' : '' }}</span>
+            </ng-template>
+        </vdr-dt2-column>
+        
+        <vdr-dt2-column heading="CTA" [optional]="false">
+            <ng-template let-banner="item">
+                <div class="cta-cell">
+                    <span class="cta-text">{{ banner.ctaText }}</span>
+                    <a [href]="banner.ctaLink" target="_blank" rel="noopener noreferrer" class="cta-link" (click)="$event.stopPropagation()">
+                        <clr-icon shape="pop-out" size="16"></clr-icon>
+                    </a>
+                </div>
+            </ng-template>
+        </vdr-dt2-column>
+    </vdr-data-table-2>
+</vdr-page-block> -->
+
+<!-- <vdr-page-block>
+    <vdr-action-bar>
+        <vdr-ab-left>
+            <vdr-action-bar-items locationId="banner-list"></vdr-action-bar-items>
+        </vdr-ab-left>
+        <vdr-ab-right>
+            <a class="btn btn-primary" [routerLink]="['./create']">
+                <clr-icon shape="plus"></clr-icon>
+                Create Banner
+            </a>
+        </vdr-ab-right>
+    </vdr-action-bar>
+
+    <ng-container *ngIf="banners$ | async as banners; else loading">
+        <vdr-data-table-2 
+            [items]="banners"
+            (itemClick)="onBannerClick($event)">
+            
+            <vdr-dt2-column [heading]="'Image'">
+                <ng-template let-banner="item">
+                    <div class="banner-image-cell">
+                        <img 
+                            *ngIf="banner.image?.preview"
+                            [src]="banner.image.preview + '?preset=tiny'" 
+                            [alt]="banner.title" 
+                            class="banner-thumbnail" />
+                        <div *ngIf="!banner.image?.preview" class="no-image-icon">
+                            <clr-icon shape="image" size="24"></clr-icon>
+                        </div>
+                    </div>
+                </ng-template>
+            </vdr-dt2-column>
+            
+            <vdr-dt2-column [heading]="'Title'">
+                <ng-template let-banner="item">
+                    <strong>{{ banner.title }}</strong>
+                </ng-template>
+            </vdr-dt2-column>
+            
+            <vdr-dt2-column [heading]="'Description'">
+                <ng-template let-banner="item">
+                    <span class="description-preview">
+                        {{ banner.description.length > 80 ? (banner.description | slice:0:80) + '...' : banner.description }}
+                    </span>
+                </ng-template>
+            </vdr-dt2-column>
+            
+            <vdr-dt2-column [heading]="'CTA'">
+                <ng-template let-banner="item">
+                    <div class="cta-cell">
+                        <span class="cta-text">{{ banner.ctaText }}</span>
+                        <a 
+                            [href]="banner.ctaLink" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="cta-link" 
+                            (click)="$event.stopPropagation()">
+                            <clr-icon shape="pop-out" size="16"></clr-icon>
+                        </a>
+                    </div>
+                </ng-template>
+            </vdr-dt2-column>
+        </vdr-data-table-2>
+    </ng-container>
+
+    <ng-template #loading>
+        <div class="loading-state" style="padding: 2rem; text-align: center;">
+            Loading banners...
+        </div>
+    </ng-template>
+</vdr-page-block> -->
+
+<vdr-page-block>
+    <vdr-action-bar>
+        <vdr-ab-left>
+            <vdr-action-bar-items locationId="banner-list"></vdr-action-bar-items>
+        </vdr-ab-left>
+        <vdr-ab-right>
+            <a class="btn btn-primary" [routerLink]="['./create']">
+                <clr-icon shape="plus"></clr-icon>
+                Create Banner
+            </a>
+        </vdr-ab-right>
+    </vdr-action-bar>
+
+    <ng-container *ngIf="banners$ | async as banners">
+        <table class="table" style="width: 100%; margin-top: 1rem;">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>CTA</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let banner of banners" style="cursor: pointer;" (click)="onBannerClick(banner)">
+                    <td>
+                        <img 
+                            *ngIf="banner.image?.preview"
+                            [src]="banner.image.preview + '?preset=tiny'" 
+                            [alt]="banner.title"
+                            style="max-width: 80px; height: auto; border-radius: 4px;" />
+                        <clr-icon *ngIf="!banner.image?.preview" shape="image" size="24"></clr-icon>
+                    </td>
+                    <td><strong>{{ banner.title }}</strong></td>
+                    <td>{{ banner.description | slice:0:80 }}{{ banner.description.length > 80 ? '...' : '' }}</td>
+                    <td>
+                        {{ banner.ctaText }}
+                        <a 
+                            [href]="banner.ctaLink" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            (click)="$event.stopPropagation()"
+                            style="margin-left: 0.5rem;">
+                            <clr-icon shape="pop-out" size="16"></clr-icon>
+                        </a>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" (click)="onBannerClick(banner); $event.stopPropagation()">
+                            Edit
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="deleteBanner(banner); $event.stopPropagation()">
+                             <clr-icon shape="trash" class="is-solid"></clr-icon>
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </ng-container>
+</vdr-page-block>

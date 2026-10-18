@@ -1,0 +1,58 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-right>
+      <vdr-action-bar-items locationId="seller-registration-list"></vdr-action-bar-items>
+      <vdr-action-bar-dropdown-menu locationId="seller-registration-list"></vdr-action-bar-dropdown-menu>
+    </vdr-ab-right>
+  </vdr-action-bar>
+
+  <vdr-data-table-2
+    class="mt-2"
+    id="seller-registration-list"
+    [items]="registrations$ | async"
+    [itemsPerPage]="itemsPerPage$ | async"
+    [totalItems]="totalItems$ | async"
+    [currentPage]="currentPage$ | async"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+  >
+    <vdr-dt2-column heading="Business" id="businessName">
+      <ng-template let-item="item">
+        <a class="button-ghost" (click)="openDetail(item.id)">
+          {{ item.businessName || '—' }}
+          <clr-icon shape="arrow right"></clr-icon>
+        </a>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="PAN" id="panNo" style="max-width: 180px">
+      <ng-template let-item="item">
+        {{ item.panNo || '—' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Owner" id="ownerName">
+      <ng-template let-item="item">
+        {{ item.ownerName || '—' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Phone" id="phone" style="max-width: 180px">
+      <ng-template let-item="item">
+        {{ item.phone || '—' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Email" id="email">
+      <ng-template let-item="item">
+        {{ item.email || '—' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Created" id="createdAt" style="max-width: 220px">
+      <ng-template let-item="item">
+        {{ item.createdAt | date: 'medium' }}
+      </ng-template>
+    </vdr-dt2-column>
+  </vdr-data-table-2>
+</vdr-page-block>

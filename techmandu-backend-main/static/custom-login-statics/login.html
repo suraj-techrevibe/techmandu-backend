@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin login</title>
+
+</head>
+
+<body>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .login-wrapper {
+            background: #f4f4f4;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .login-wrapper-inner {
+            background: #fff;
+            width: 1050px;
+            height: 590px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: stretch;
+            position: relative;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-wrapper-image {
+            height: 100%;
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-wrapper-image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            object-position: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-wrapper-image-content {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+            background: linear-gradient(180deg, rgba(2, 0, 36, 0) 0%, rgba(0, 0, 0, 0.75) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .login-wrapper-image-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .login-wrapper-form {
+            height: 100%;
+            width: 400px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            box-shadow: 0px 20px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .login-title {
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #737373;
+        }
+
+        .login-group {
+            margin-bottom: 15px;
+        }
+
+        .login-group input.username,
+        .login-group input.password {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px 16px !important;
+            background: #fff;
+            font-size: 14px;
+            line-height: 22px;
+            color: #52667a;
+            outline: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-appearance: none;
+            box-sizing: border-box;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            color: #52667a;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-group input {
+            margin: 0;
+        }
+
+        .login-button-container {
+            margin-top: 10px;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #005E80;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .version {
+            flex: 1;
+            flex-grow: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: #b0b0b0;
+            font-size: 0.85rem;
+            padding-top: 20px;
+        }
+
+        .login-error {
+            max-height: 0;
+            overflow: hidden;
+            color: red;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            transition: max-height 0.2s ease-in-out;
+        }
+
+        .login-error.visible {
+            max-height: 46px;
+            transition: max-height 0.2s ease-in-out;
+            animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
+        }
+
+        .login-wrapper-logo {
+            width: 60px;
+            height: auto;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+
+        .button.secondary.fyp-button {
+            font-size: 1.0rem;
+            background: none;
+            border: none;
+            padding: 0;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 15px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(24, 212, 71, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #26e42d;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 25px;
+            border: 1px solid #888;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #forgot_email {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .submit-button {
+            width: 100%;
+            margin-top: 20px !important;
+            padding: 12px 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #005E80;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* --- Responsive Styles for Mobile --- */
+        @media (max-width: 992px) {
+            .login-wrapper-inner {
+                width: 100%;
+                max-width: 700px;
+            }
+            .login-wrapper-form {
+                width: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-wrapper {
+                align-items: flex-start;
+                padding-top: 5vh;
+            }
+
+            .login-wrapper-inner {
+                flex-direction: column;
+                height: auto;
+                width: 100%;
+                max-width: 450px;
+            }
+
+            .login-wrapper-image {
+                height: 300px;
+            }
+
+            .login-wrapper-image-title {
+                font-size: 1.2rem;
+            }
+
+            .login-wrapper-form {
+                height: auto;
+                width: 100%;
+                padding: 30px 25px;
+            }
+        }
+    </style>
+
+    <div class="login-wrapper">
+        <div class="login-wrapper-inner">
+            <div class="login-wrapper-image">
+                <div class="login-wrapper-image-content">
+                    <div class="login-wrapper-image-title">
+                         Welcome to the Admin Portal 
+                    </div>
+                </div>
+                <img src="https://docs.hyperce.io/assets/Hyperclicks-Admin-Portal.png" alt="Admin portal graphic" />
+            </div>
+            <div class="login-wrapper-form">
+                <p class="login-title">
+                    Please Sign In to Proceed
+                </p>
+
+                <form class="login-form">
+                    <div class="login-group">
+                        <input class="username" type="text" name="username" id="login_username" placeholder="Email" />
+                        <input class="password" name="password" type="password" id="login_password"
+                            placeholder="Password" />
+                        <div class="login-error">
+                            <span class="alert-text">
+                                Error message goes here
+                            </span>
+                        </div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="rememberme" name="rememberme" />
+                        <label for="rememberme">Remember Me</label>
+                    </div>
+                    <div class="login-button-container">
+                        <button type="button" class="button primary login-button" onclick="handleLogin(event)"
+                            method="POST">
+                            Login
+                        </button>
+                        <div class="spinner" id="spinner_login" style="display: none;"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Forgot Password -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 class="modal-header">Forgot Password</h2>
+            <p style="display: block;" id="forgot_password_label">Please enter your email address to reset your
+                password.</p>
+            <input type="email" id="forgot_email" placeholder="Enter your email" required style="display: block;">
+            <div class="error-message" id="emailError" style="color: red; display: none;"></div>
+            <button class="submit-button" onclick="handleForgotPassword()">Submit</button>
+            <div class="spinner" id="spinner_modal" style="display: none;"></div>
+
+        </div>
+    </div>
+
+    <script>
+        // Your JavaScript is fine and requires no changes.
+        function getHost() {
+            const currentUrl = window.location.href;
+            const url = new URL(currentUrl);
+            return `${url.protocol}//${url.host}`;
+        }
+
+        const host = getHost();
+        (function autoLoginFromQueryParam() {
+            console.log("Auto-login script triggered");
+            const params = new URLSearchParams(window.location.search);
+            const credEncoded = params.get('cred');
+
+            if (credEncoded) {
+                try {
+                    const decoded = atob(credEncoded); // decode base64
+                    const [username, password] = decoded.split(':');
+
+                    if (username && password) {
+                        document.getElementById('login_username').value = username;
+                        document.getElementById('login_password').value = password;
+                        document.getElementById('rememberme').checked = false;
+
+                        const spinner = document.getElementById('spinner_login');
+                        const errorMessage = document.querySelector('.login-error .alert-text');
+                        const errorContainer = document.querySelector('.login-error');
+
+                        spinner.style.display = 'block';
+                        errorMessage.textContent = '';
+                        errorContainer.classList.remove('visible');
+
+                        const query = `
+                    mutation {
+                        login(username: "${username}", password: "${password}", rememberMe: false) {
+                            __typename
+                        }
+                    }
+                `;
+
+                        graphQlQuery(query)
+                            .then(result => {
+                                spinner.style.display = 'none';
+                                if (result.data?.login?.__typename === "CurrentUser") {
+                                    console.log("✅ Auto-login successful");
+                                    window.history.replaceState({}, document.title, window.location.pathname);
+                                    window.location.replace(`${host}/admin`);
+                                } else {
+                                    errorMessage.textContent = 'Auto-login failed: Invalid credentials';
+                                    errorContainer.classList.add('visible');
+                                    console.error("❌ Auto-login failed: invalid credentials");
+                                }
+                            })
+                            .catch(error => {
+                                spinner.style.display = 'none';
+                                errorMessage.textContent = 'Auto-login failed. Please try manually.';
+                                errorContainer.classList.add('visible');
+                                console.error("❌ Auto-login error:", error);
+                            });
+                    }
+                } catch (e) {
+                    console.error("❌ Failed to decode 'cred' param:", e);
+                }
+            }
+        })();
+
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('login_username').value.trim();
+            const password = document.getElementById('login_password').value.trim();
+            const rememberMe = document.getElementById('rememberme').checked;
+            const errorMessage = document.querySelector('.login-error .alert-text');
+            const errorContainer = document.querySelector('.login-error');
+            const spinner = document.getElementById('spinner_login');
+
+            errorMessage.textContent = '';
+            errorContainer.classList.remove('visible');
+
+            if (!username || !password) {
+                errorMessage.textContent = 'Username and password cannot be empty';
+                errorContainer.classList.add('visible');
+                return;
+            }
+
+            spinner.style.display = 'block';
+
+            const query = `
+        mutation {
+            login(username: "${username}", password: "${password}", rememberMe: ${rememberMe}) {
+                __typename
+            }
+        }
+    `;
+
+            graphQlQuery(query)
+                .then(result => {
+                    spinner.style.display = 'none';
+                    if (result.data?.login?.__typename === "CurrentUser") {
+
+                        window.location.replace(`${host}/admin`);
+                    } else {
+                        errorMessage.textContent = 'Invalid username or password';
+                        errorContainer.classList.add('visible');
+                    }
+                })
+                .catch(error => {
+                    spinner.style.display = 'none';
+                    errorMessage.textContent = 'An error occurred. Please try again.';
+                    errorContainer.classList.add('visible');
+                });
+
+            document.getElementById('login_username').value = '';
+            document.getElementById('login_password').value = '';
+            document.getElementById('rememberme').checked = false;
+        }
+
+
+
+
+        function graphQlQuery(query, variables = {}) {
+            return fetch(`${host}/admin-api`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    variables: variables
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.errors) {
+                        console.error('GraphQL Errors:', data.errors);
+                        throw new Error('GraphQL query failed');
+                    }
+                    console.log(data);
+                    return data;
+                })
+                .catch(error => {
+                    console.error('Error during GraphQL request:', error);
+                    throw error;
+                });
+        }
+
+
+
+        function handleForgotPassword() {
+            const emailInput = document.getElementById('forgot_email').value;
+            const emailError = document.getElementById('emailError');
+            const spinner = document.getElementById('spinner_modal');
+            const successMessage = "Please check your email to validate your account";
+
+
+            emailError.style.display = 'none';
+            emailError.textContent = '';
+            emailError.style.color = 'red';
+
+            spinner.style.display = 'block';
+
+            const query = `
+        mutation {
+            forgotPassword(email: "${emailInput}") {
+                status
+                __typename
+            }
+        }
+    `;
+
+            graphQlQuery(query)
+                .then(result => {
+                    spinner.style.display = 'none';
+
+                    if (result.data?.forgotPassword?.status === "Success") {
+                        emailError.textContent = successMessage;
+                        emailError.style.color = 'green';
+                        emailError.style.display = 'block';
+                        document.getElementById('forgot_email').style.display = 'none';
+                    } else {
+                        emailError.textContent = "This email does not exist. Please try again.";
+                        emailError.style.display = 'block';
+                        document.getElementById('forgot_password_label').style.display = 'none';
+                        document.getElementById('forgot_email').value = '';
+
+                        document.getElementById('forgot_email').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    spinner.style.display = 'none';
+                    emailError.textContent = 'An error occurred. Please try again.';
+                    emailError.style.display = 'block';
+                    document.getElementById('forgot_email').value = '';
+                });
+
+
+
+        }
+
+
+        function openModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        const isAuthenticatedQuery = `
+                query{
+                me{
+                    id
+                    __typename
+                }
+            }
+    `;
+
+        graphQlQuery(isAuthenticatedQuery).then(result => {
+            if (result.data.me.__typename === "CurrentUser") {
+                window.location.replace(`${host}/admin`);
+            }
+
+        })
+    </script>
+</body>
+
+</html>

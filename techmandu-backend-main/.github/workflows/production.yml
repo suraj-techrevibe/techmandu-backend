@@ -1,0 +1,49 @@
+name: Build and deploy to the server.
+
+on:
+  push:
+    branches:
+      - production
+  
+jobs:
+  build:
+    name: Build and Deploy on production environment
+    if: github.ref == 'refs/heads/production'   # Change branch name if not using production branch
+    runs-on: ubuntu-latest
+    environment: production  # Deploying on production
+    steps:
+      - name: Checkout Repositories.
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - name: Install Yarn.
+        run: npm install -g yarn
+      - name: Install Dependencies with yarn.
+        run: yarn
+      - name: Building application.
+        run: yarn build
+      - name: Push build files to the server.
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SERVER_KEY }}
+          port: ${{ secrets.PROD_SERVER_PORT }}
+          source: dist
+          target: /home/${{ secrets.PROD_SERVER_USER }}/techmandu-backend
+          timeout: 120s
+          command_timeout: 600s
+          overwrite: true
+      - name: Deploy to server.
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SERVER_KEY }}
+          port: ${{ secrets.PROD_SERVER_PORT }}
+          timeout: 120s
+          command_timeout: 600s
+          script: |
+            deploybackend

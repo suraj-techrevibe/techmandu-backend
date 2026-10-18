@@ -1,0 +1,52 @@
+<vdr-page-body>
+    <ng-container *ngIf="contact$ | async as contact; else loading">
+        <vdr-page-block>
+            <vdr-action-bar>
+                <vdr-ab-left>
+                    <div class="vdr-page-title">Contact message #{{ contact.id }}</div>
+                    <p class="vdr-page-description">
+                        Created {{ contact.createdAt | date: 'medium' }} • Updated
+                        {{ contact.updatedAt | date: 'medium' }}
+                    </p>
+                </vdr-ab-left>
+                <vdr-ab-right>
+                    <button class="btn btn-danger" (click)="delete(contact.id)">Delete</button>
+                </vdr-ab-right>
+            </vdr-action-bar>
+        </vdr-page-block>
+
+        <vdr-page-block>
+            <div class="form-grid">
+                <div>
+                    <label>Name</label>
+                    <div>{{ contact.name }}</div>
+                </div>
+                <div>
+                    <label>Email</label>
+                    <div>{{ contact.emailAddress }}</div>
+                </div>
+                <div>
+                    <label>Phone</label>
+                    <div>{{ contact.phone || '—' }}</div>
+                </div>
+                <div>
+                    <label>Subject</label>
+                    <div>{{ contact.subject }}</div>
+                </div>
+            </div>
+        </vdr-page-block>
+
+        <vdr-page-block>
+            <h3>Message</h3>
+            <pre style="white-space: pre-wrap; margin: 0">{{ contact.message }}</pre>
+        </vdr-page-block>
+    </ng-container>
+
+    <ng-template #loading>
+        <vdr-page-block>
+            <p class="vdr-page-description">Loading…</p>
+        </vdr-page-block>
+    </ng-template>
+</vdr-page-body>
+
+

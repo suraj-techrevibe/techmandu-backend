@@ -1,0 +1,82 @@
+<vdr-page-body>
+    <vdr-page-block>
+        <vdr-action-bar>
+            <vdr-ab-left>
+                <vdr-language-selector
+                    [availableLanguageCodes]="availableLanguages$ | async"
+                    [currentLanguageCode]="contentLanguage$ | async"
+                    (languageCodeChange)="setLanguage($event)"
+                ></vdr-language-selector>
+            </vdr-ab-left>
+            <vdr-ab-right>
+                <a class="btn btn-primary" [routerLink]="['./', 'create']">
+                    <clr-icon shape="plus"></clr-icon>
+                    {{ 'page.create-new-page' | translate }}
+                </a>
+            </vdr-ab-right>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <vdr-data-table-2
+        id="page-list"
+        [items]="items$ | async"
+        [itemsPerPage]="itemsPerPage$ | async"
+        [totalItems]="totalItems$ | async"
+        [currentPage]="currentPage$ | async"
+        [filters]="filters"
+        (pageChange)="setPageNumber($event)"
+        (itemsPerPageChange)="setItemsPerPage($event)"
+    >
+        <vdr-bulk-action-menu
+            locationId="page-list"
+            [hostComponent]="this"
+            [selectionManager]="selectionManager"
+        />
+        <vdr-dt2-search
+            [searchTermControl]="searchTermControl"
+            searchTermPlaceholder="{{ 'common.search-by-name' | translate }}"
+        />
+        <vdr-dt2-column id="id" [heading]="'common.id' | translate" [hiddenByDefault]="true">
+            <ng-template let-page="item">
+                {{ page.id }}
+            </ng-template>
+        </vdr-dt2-column>
+        <vdr-dt2-column
+            [heading]="'common.created-at' | translate"
+            [hiddenByDefault]="true"
+            [sort]="sorts.get('createdAt')"
+        >
+            <ng-template let-page="item">{{ page.createdAt | localeDate: 'short' }}</ng-template>
+        </vdr-dt2-column>
+        <vdr-dt2-column
+            [heading]="'common.updated-at' | translate"
+            [hiddenByDefault]="true"
+            [sort]="sorts.get('updatedAt')"
+        >
+            <ng-template let-page="item">{{ page.updatedAt | localeDate: 'short' }}</ng-template>
+        </vdr-dt2-column>
+        <vdr-dt2-column id="title" [heading]="'page.title' | translate" [hiddenByDefault]="false">
+            <ng-template let-page="item">
+                <a class="button-ghost" [routerLink]="['./', page.id]">
+                    {{ page.title }}
+                    <clr-icon shape="arrow right"></clr-icon>
+                </a>
+            </ng-template>
+        </vdr-dt2-column>
+        <vdr-dt2-column [heading]="'common.slug' | translate">
+            <ng-template let-page="item">
+                <span>{{ page.slug }}</span>
+            </ng-template>
+        </vdr-dt2-column>
+        <vdr-dt2-column id="enabled" [heading]="'common.enabled' | translate">
+            <ng-template let-faq="item">
+                <vdr-chip *ngIf="faq.enabled" colorType="success">
+                    {{ 'common.enabled' | translate }}
+                </vdr-chip>
+                <vdr-chip *ngIf="!faq.enabled" colorType="warning">
+                    {{ 'common.disabled' | translate }}
+                </vdr-chip>
+            </ng-template>
+        </vdr-dt2-column>
+    </vdr-data-table-2>
+</vdr-page-body>

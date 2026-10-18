@@ -1,0 +1,70 @@
+<vdr-page-body>
+    <vdr-page-block>
+        <vdr-action-bar>
+            <vdr-ab-left>
+                <p class="vdr-page-description">Messages submitted via your shop contact form.</p>
+            </vdr-ab-left>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <div style="margin-top: 2em"></div>
+    <vdr-data-table-2
+        id="contact-message-list"
+        [items]="(items$ | async) || []"
+        [itemsPerPage]="(itemsPerPage$ | async) ?? defaultItemsPerPage"
+        [totalItems]="(totalItems$ | async) ?? 0"
+        [currentPage]="currentPage$ | async"
+        [filters]="[]"
+        (pageChange)="setPageNumber($event)"
+        (itemsPerPageChange)="setItemsPerPage($event)"
+    >
+        <vdr-dt2-column id="created" heading="Created">
+            <ng-template let-contact="item">
+                <a [routerLink]="['/extensions', 'contacts', contact.id]">
+                    {{ contact.createdAt | date: 'medium' }}
+                </a>
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="name" heading="Name">
+            <ng-template let-contact="item">
+                {{ contact.name }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="email" heading="Email">
+            <ng-template let-contact="item">
+                {{ contact.emailAddress }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="phone" heading="Phone">
+            <ng-template let-contact="item">
+                {{ contact.phone || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="subject" heading="Subject">
+            <ng-template let-contact="item">
+                {{ contact.subject }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="actions" heading="Actions">
+            <ng-template let-contact="item">
+                <button
+                    class="button-ghost"
+                    [routerLink]="['/extensions', 'contacts', contact.id]"
+                    title="View"
+                >
+                    <clr-icon shape="eye"></clr-icon>
+                </button>
+                <button class="button-ghost" (click)="deleteContact(contact.id)" title="Delete">
+                    <clr-icon shape="trash"></clr-icon>
+                </button>
+            </ng-template>
+        </vdr-dt2-column>
+    </vdr-data-table-2>
+</vdr-page-body>
+
+

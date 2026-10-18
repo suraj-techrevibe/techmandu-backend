@@ -1,0 +1,69 @@
+<vdr-page-body>
+    <vdr-page-block>
+        <vdr-action-bar>
+            <vdr-ab-left>
+                <vdr-language-selector
+                    [disabled]="isNew$ | async"
+                    [availableLanguageCodes]="availableLanguages$ | async"
+                    [currentLanguageCode]="languageCode$ | async"
+                    (languageCodeChange)="setLanguage($event)"
+                ></vdr-language-selector>
+            </vdr-ab-left>
+            <vdr-ab-right>
+                <button
+                    class="button primary"
+                    *ngIf="isNew$ | async; else updateButton"
+                    (click)="create()"
+                    [disabled]="detailForm.pristine || detailForm.invalid"
+                >
+                    {{ 'common.create' | translate }}
+                </button>
+                <ng-template #updateButton>
+                    <button
+                        class="btn btn-primary"
+                        (click)="update()"
+                        [disabled]="detailForm.pristine || detailForm.invalid"
+                    >
+                        {{ 'common.update' | translate }}
+                    </button>
+                </ng-template>
+            </vdr-ab-right>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <form class="form" [formGroup]="detailForm">
+        <vdr-page-detail-layout>
+            <vdr-page-detail-sidebar>
+                <vdr-card *ngIf="entity$ | async as entity">
+                    <vdr-form-field label="Visibility" for="enabled">
+                        <clr-toggle-wrapper>
+                            <input
+                                id="enabled"
+                                [checked]="true"
+                                clrToggle
+                                [name]="'common.enabled' | translate"
+                                type="checkbox"
+                                formControlName="enabled"
+                            />
+                        </clr-toggle-wrapper>
+                    </vdr-form-field>
+                    <vdr-page-entity-info [entity]="entity"></vdr-page-entity-info>
+                </vdr-card>
+            </vdr-page-detail-sidebar>
+
+            <vdr-page-block>
+                <vdr-card>
+                    <div class="form-grid">
+                        <vdr-form-field [label]="'common.name' | translate" for="name">
+                            <input id="name" type="text" formControlName="name" required autocomplete="on" />
+                        </vdr-form-field>
+
+                        <vdr-form-field [label]="'common.slug' | translate" for="slug">
+                            <input id="slug" type="text" formControlName="slug" autocomplete="on" />
+                        </vdr-form-field>
+                    </div>
+                </vdr-card>
+            </vdr-page-block>
+        </vdr-page-detail-layout>
+    </form>
+</vdr-page-body>

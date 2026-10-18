@@ -1,0 +1,129 @@
+<vdr-page-block>
+    <vdr-action-bar>
+        <vdr-ab-left>
+            <vdr-language-selector
+                [availableLanguageCodes]="availableLanguages$ | async"
+                [currentLanguageCode]="contentLanguage$ | async"
+                (languageCodeChange)="setLanguage($event)"
+            ></vdr-language-selector>
+        </vdr-ab-left>
+        <vdr-ab-right>
+            <a class="btn btn-primary" [routerLink]="['./', 'create']">
+                <clr-icon shape="plus"></clr-icon>
+                <span>{{ 'page.create-new-page-group' | translate }}</span>
+            </a>
+        </vdr-ab-right>
+    </vdr-action-bar>
+</vdr-page-block>
+
+<!-- <vdr-split-view [rightPanelOpen]="activePageGroup$ | async" (closeClicked)="closeMembers()"> -->
+<!-- <ng-template vdrSplitViewLeft> -->
+<vdr-data-table-2
+    id="page-group-list"
+    [items]="items$ | async"
+    [itemsPerPage]="itemsPerPage$ | async"
+    [totalItems]="totalItems$ | async"
+    [currentPage]="currentPage$ | async"
+    [filters]="filters"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+>
+    <vdr-bulk-action-menu
+        locationId="page-group-list"
+        [hostComponent]="this"
+        [selectionManager]="selectionManager"
+    />
+
+    <vdr-dt2-search
+        [searchTermControl]="searchTermControl"
+        searchTermPlaceholder="'common.search-by-name' | translate"
+    />
+
+    <vdr-dt2-column id="id" [heading]="'common.id' | translate" [hiddenByDefault]="true">
+        <ng-template let-group="item">
+            {{ group.id }}
+        </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column
+        id="name"
+        [heading]="'common.name' | translate"
+        [optional]="false"
+        [sort]="sorts.get('name')"
+    >
+        <ng-template let-group="item">
+            <a class="button-ghost" [routerLink]="['./', group.id]">
+                {{ group.name }}
+                <clr-icon shape="arrow right"></clr-icon>
+            </a>
+        </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="slug" [heading]="'common.slug' | translate" [sort]="sorts.get('slug')">
+        <ng-template let-group="item">
+            {{ group.slug }}
+        </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column
+        [hiddenByDefault]="true"
+        [heading]="'common.created-at' | translate"
+        [sort]="sorts.get('createdAt')"
+    >
+        <ng-template let-group="item">
+            {{ group.createdAt | localeDate: 'short' }}
+        </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column
+        id="updated-at"
+        [heading]="'common.updated-at' | translate"
+        [hiddenByDefault]="true"
+        [sort]="sorts.get('updatedAt')"
+    >
+        <ng-template let-group="item">
+            {{ group.updatedAt | localeDate: 'short' }}
+        </ng-template>
+    </vdr-dt2-column>
+
+    <!-- <vdr-dt2-column
+                [heading]="'common.view-contents' | translate"
+                id="view-contents"
+                [optional]="false"
+            >
+                <ng-template let-group="item">
+                    <a
+                        class="button-small bg-weight-150"
+                        [routerLink]="['./', { contents: group.id }]"
+                        queryParamsHandling="preserve"
+                    >
+                        <span>View pages</span>
+                        <clr-icon shape="file-group"></clr-icon>
+                    </a>
+                </ng-template>
+            </vdr-dt2-column> -->
+
+    <vdr-dt2-column id="enabled" [heading]="'common.enabled' | translate">
+        <ng-template let-group="item">
+            <vdr-chip *ngIf="group.enabled" colorType="success">
+                {{ 'common.enabled' | translate }}
+            </vdr-chip>
+            <vdr-chip *ngIf="!group.enabled" colorType="warning">
+                {{ 'common.disabled' | translate }}
+            </vdr-chip>
+        </ng-template>
+    </vdr-dt2-column>
+</vdr-data-table-2>
+<!-- </ng-template> -->
+
+<!-- <ng-template vdrSplitViewRight [splitViewTitle]="(activePageGroup$ | async)?.name">
+        <ng-container *ngIf="activePageGroup$ | async as activeGroup">
+            <div class="ml-4">
+                <button class="button-ghost">
+                    <clr-icon shape="plus"></clr-icon>
+                    <span>Add pages to {{ activeGroup.name }}</span>
+                </button>
+            </div>
+        </ng-container>
+    </ng-template> -->
+<!-- </vdr-split-view> -->

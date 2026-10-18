@@ -1,0 +1,51 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-right>
+      <vdr-action-bar-items locationId="blog-list" />
+
+      <a class="btn" [routerLink]="['/extensions/blogs/create']" style="margin-right: 15px;">
+        <clr-icon shape="plus"></clr-icon>
+        Create Blog
+      </a>
+
+      <button class="btn btn-danger" [disabled]="selectedBlogIds.length === 0" (click)="deleteSelectedBlogs()">
+        <clr-icon shape="trash"></clr-icon>
+        Delete Selected
+      </button>
+
+      <vdr-action-bar-dropdown-menu locationId="blog-list" />
+    </vdr-ab-right>
+  </vdr-action-bar>
+
+  <vdr-data-table-2
+    class="mt-2"
+    id="blog-list"
+    [items]="blogs$ | async"
+    [itemsPerPage]="itemsPerPage$ | async"
+    [totalItems]="totalItems$ | async"
+    [currentPage]="currentPage$ | async"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+  >
+    <vdr-dt2-column heading="Select" id="select" class="text-center" style="max-width: 60px; width: 60px;">
+      <ng-template let-item="item">
+        <input type="checkbox" [checked]="isSelected(item.id)" (change)="toggleSelection(item.id, $event.target.checked)" />
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Name" id="name">
+      <ng-template let-item="item">
+        <a class="button-ghost" (click)="editBlog(item.id)">
+          {{ item.name }}
+          <clr-icon shape="arrow right"></clr-icon>
+        </a>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Slug" id="slug">
+      <ng-template let-item="item">
+        {{ item.slug }}
+      </ng-template>
+    </vdr-dt2-column>
+  </vdr-data-table-2>
+</vdr-page-block>

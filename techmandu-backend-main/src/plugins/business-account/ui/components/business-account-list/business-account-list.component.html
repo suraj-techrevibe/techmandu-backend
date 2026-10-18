@@ -1,0 +1,92 @@
+<vdr-page-body>
+    <vdr-page-block>
+        <vdr-action-bar>
+            <vdr-ab-left></vdr-ab-left>
+            <vdr-ab-right>
+                <vdr-form-field label="Verification Status">
+                    <select
+                        class="form-control"
+                        [value]="filterIsVerifiedValue"
+                        (change)="setFilterIsVerified($any($event.target).value === 'null' ? null : $any($event.target).value === 'true')"
+                    >
+                        <option value="null">All</option>
+                        <option value="true">Verified</option>
+                        <option value="false">Unverified</option>
+                    </select>
+                </vdr-form-field>
+            </vdr-ab-right>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <div style="margin-top: 2em"></div>
+    <vdr-data-table-2
+        id="business-account-list"
+        [items]="(items$ | async) || []"
+        [itemsPerPage]="(itemsPerPage$ | async) ?? defaultItemsPerPage"
+        [totalItems]="(totalItems$ | async) ?? 0"
+        [currentPage]="currentPage$ | async"
+        [filters]="[]"
+        (pageChange)="setPageNumber($event)"
+        (itemsPerPageChange)="setItemsPerPage($event)"
+    >
+        <vdr-dt2-column id="name" heading="Name">
+            <ng-template let-account="item">
+                {{ getFullName(account) }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="businessName" heading="Business Name">
+            <ng-template let-account="item">
+                {{ account.customFields.businessName || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="email" heading="Email">
+            <ng-template let-account="item">
+                {{ account.emailAddress }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="phone" heading="Phone">
+            <ng-template let-account="item">
+                {{ account.phoneNumber || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="vatPan" heading="VAT/PAN">
+            <ng-template let-account="item">
+                {{ account.customFields.vatPan || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="status" heading="Status">
+            <ng-template let-account="item">
+                <span
+                    class="badge"
+                    [class.badge-success]="account.customFields.isVerified"
+                    [class.badge-warning]="!account.customFields.isVerified"
+                >
+                    {{ account.customFields.isVerified ? 'Verified' : 'Unverified' }}
+                </span>
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="created" heading="Created">
+            <ng-template let-account="item">
+                {{ account.createdAt | date: 'medium' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="actions" heading="Actions">
+            <ng-template let-account="item">
+                <button
+                    class="button-ghost"
+                    (click)="openDetail(account.id)"
+                    title="View Details"
+                >
+                    <clr-icon shape="eye"></clr-icon>
+                </button>
+            </ng-template>
+        </vdr-dt2-column>
+    </vdr-data-table-2>
+</vdr-page-body>

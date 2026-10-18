@@ -1,0 +1,42 @@
+{{> header title="Forgotten password reset" }}
+<mj-body background-color="#ffffff">
+
+    <mj-section padding-bottom="20px">
+        <mj-text align="center" font-size="24px" font-weight="bold" color="#000000" line-height="1.5" padding="0">
+            <strong>Reset your password</strong>
+        </mj-text>
+    </mj-section>
+
+<mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+    <mj-section padding-bottom="20px">
+        <mj-text font-size="20px" color="#000000" line-height="1.5" padding="0">
+            <strong>Hey, {{ order.customer.firstName }}</strong><br/><br/>
+            Need to reset your password? No problem! Just click the button below and you’ll be on your way. If you did not make this request, please ignore this email
+        </mj-text>
+    </mj-section>
+
+    <mj-section padding-bottom="20px">
+        <mj-column>
+            <mj-button 
+                font-family="Helvetica" 
+                font-size="16px"
+                background-color="#F15A27"
+                color="white"
+                border-radius="10px"
+                width="100%"
+                height="50px"
+                padding="20px 0"
+                href="{{ passwordResetUrl }}?token={{ passwordResetToken }}">
+                Reset your password
+            </mj-button>
+        </mj-column>
+    </mj-section>
+
+    <mj-section padding-bottom="20px">
+        <mj-text font-size="20px" color="#000000" line-height="1.5" padding="0">
+            If you didn't request this, you can ignore this email.<br/><br/>
+            <strong>Stay secure<br/>Techmandu.</strong>
+        </mj-text>
+    </mj-section>
+{{> footer }}

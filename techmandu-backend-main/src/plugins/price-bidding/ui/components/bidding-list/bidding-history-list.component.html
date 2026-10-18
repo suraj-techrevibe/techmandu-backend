@@ -1,0 +1,61 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-right>
+      <vdr-action-bar-items locationId="bidding-history-list"></vdr-action-bar-items>
+      <vdr-action-bar-dropdown-menu locationId="bidding-history-list"></vdr-action-bar-dropdown-menu>
+    </vdr-ab-right>
+  </vdr-action-bar>
+
+  <vdr-data-table-2
+    class="mt-2"
+    id="bidding-history-list"
+    [items]="biddingHistory$ | async"
+    [itemsPerPage]="itemsPerPage$ | async"
+    [totalItems]="totalItems$ | async"
+    [currentPage]="currentPage$ | async"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+  >
+
+    <vdr-dt2-column heading="Variant ID" id="variantId">
+      <ng-template let-item="item">
+        <a class="button-ghost" [routerLink]="['/catalog/products', 4, 'variants', item.variantId]">
+          {{ item.variantId }}
+        </a>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Initial Price" id="initialPrice">
+      <ng-template let-item="item">
+        {{ item.initialPrice / 100 }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Final Price" id="finalPrice">
+      <ng-template let-item="item">
+        {{ item.finalPrice / 100 }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Verified" id="isVerified">
+      <ng-template let-item="item">
+        <vdr-tag [color]="item.isVerified ? 'success' : 'warning'" *ngIf="item.isVerified !== null">
+          {{ item.isVerified ? 'Yes' : 'No' }}
+        </vdr-tag>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Created" id="createdAt">
+      <ng-template let-item="item">
+        {{ item.createdAt | date: 'medium' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Action" id="action">
+      <ng-template let-item="item">
+        <button class="btn btn-primary btn-sm" (click)="openUpdateDialog(item)">Update</button>
+      </ng-template>
+    </vdr-dt2-column>
+
+  </vdr-data-table-2>
+</vdr-page-block>

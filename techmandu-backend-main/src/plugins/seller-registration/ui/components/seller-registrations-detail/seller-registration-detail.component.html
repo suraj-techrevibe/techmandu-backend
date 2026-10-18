@@ -1,0 +1,160 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-left>
+      <button class="btn btn-secondary" (click)="backToList()">
+        <clr-icon shape="rewind"></clr-icon>
+        Back
+      </button>
+    </vdr-ab-left>
+
+    <vdr-ab-right>
+      <button
+        class="btn"
+        [ngClass]="registration?.isVerified ? 'btn-secondary' : 'btn-success'"
+        [disabled]="loading"
+        (click)="onVerify()"
+      >
+        <clr-icon
+          [attr.shape]="registration?.isVerified ? 'email' : 'shield-check'"
+        ></clr-icon>
+        {{ verifiedLabel }}
+      </button>
+
+      <button class="btn btn-danger" [disabled]="loading" (click)="onDelete()">
+        <clr-icon shape="trash"></clr-icon>
+        Delete
+      </button>
+    </vdr-ab-right>
+  </vdr-action-bar>
+</vdr-page-block>
+
+<div *ngIf="loading" class="p-4" style="text-align:center">
+  <vdr-loading-spinner></vdr-loading-spinner>
+</div>
+
+<form *ngIf="!loading && registration">
+  <vdr-page-detail-layout>
+
+    <!-- ================= SIDEBAR ================= -->
+    <vdr-page-detail-sidebar>
+
+      <vdr-card title="Verification Status">
+        <div class="flex items-center gap-2">
+          <clr-icon
+            [attr.shape]="registration.isVerified ? 'shield-check' : 'shield-x'"
+            [ngClass]="registration.isVerified ? 'text-success' : 'text-danger'"
+          ></clr-icon>
+          <span>
+            {{ registration.isVerified ? 'Verified Vendor' : 'Not Verified' }}
+          </span>
+        </div>
+      </vdr-card>
+
+      <!-- Stock Location selector (ONLY before verification) -->
+      <vdr-card
+        title="Stock Location"
+        *ngIf="!registration.isVerified"
+      >
+        <vdr-form-field label="Assign Stock Location">
+          <select
+            class="form-control"
+            [(ngModel)]="stockLocationId"
+            name="stockLocationId"
+          >
+            <option [ngValue]="null">Select stock location</option>
+            <option *ngFor="let loc of stockLocations" [value]="loc.id">
+              {{ loc.name }}
+            </option>
+          </select>
+        </vdr-form-field>
+      </vdr-card>
+
+    </vdr-page-detail-sidebar>
+    <!-- =============== END SIDEBAR =============== -->
+
+    <!-- ================= CONTENT ================= -->
+    <vdr-page-block>
+
+      <vdr-card title="Vendor Details">
+        <div class="form-grid">
+          <vdr-form-field label="Business Name">
+            <input
+              class="form-control"
+              [value]="registration.businessName"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="PAN No">
+            <input
+              class="form-control"
+              [value]="registration.panNo"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="Registration No">
+            <input
+              class="form-control"
+              [value]="registration.businessRegistrationNo"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="Owner Name">
+            <input
+              class="form-control"
+              [value]="registration.ownerName"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="Phone">
+            <input
+              class="form-control"
+              [value]="registration.phone"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="Email">
+            <input
+              class="form-control"
+              [value]="registration.email"
+              readonly
+            />
+          </vdr-form-field>
+
+          <vdr-form-field label="Address" class="col-span-2">
+            <textarea
+              class="form-control"
+              rows="3"
+              readonly
+            >{{ registration.address || '—' }}</textarea>
+          </vdr-form-field>
+        </div>
+      </vdr-card>
+
+      <vdr-card title="PAN Photo">
+        <vdr-asset-preview
+          *ngIf="registration.panPhoto"
+          [asset]="registration.panPhoto"
+        ></vdr-asset-preview>
+      </vdr-card>
+
+      <vdr-card title="Documents">
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <div *ngFor="let doc of registration.documents">
+            <vdr-asset-preview [asset]="doc"></vdr-asset-preview>
+            <div style="font-size:12px; text-align:center">
+              {{ doc.name }}
+            </div>
+          </div>
+        </div>
+      </vdr-card>
+
+    </vdr-page-block>
+    <!-- =============== END CONTENT =============== -->
+
+  </vdr-page-detail-layout>
+</form>

@@ -1,0 +1,53 @@
+{
+  "overwrite": true,
+  "config": {
+    "strict": true,
+    "namingConvention": {
+      "typeNames": "pascal-case#pascalCase",
+      "enumValues": "keep"
+    },
+    "scalars": {
+      "ID": "string | number",
+      "Money": "number"
+    },
+    "maybeValue": "T"
+  },
+  "generates": {
+    "src/plugins/codegen/generated-admin-types.ts": {
+      "schema": "http://localhost:3000/admin-api",
+      "plugins": [
+        {
+          "add": {
+            "content": "/* eslint-disable */"
+          }
+        },
+        "typescript"
+      ]
+    },
+    "src/plugins/codegen/generated-shop-types.ts": {
+      "schema": "http://localhost:3000/shop-api",
+      "plugins": [
+        {
+          "add": {
+            "content": "/* eslint-disable */"
+          }
+        },
+        "typescript"
+      ]
+    },
+    "src/plugins/invoices/ui/generated/graphql.ts": {
+      "schema": "src/plugins/invoices/api/api-extensions.ts",
+      "documents": "./src/plugins/invoices/ui/**/*.graphql.ts",
+      "plugins": ["typescript", "typescript-operations", "typed-document-node"]
+    },
+    "src/plugins/blogs/ui/generated/graphql.ts": {
+      "schema": "http://localhost:3000/admin-api",
+      "plugins": ["typescript", "typescript-operations", "typed-document-node"]
+    },
+    "src/plugins/pages/ui/generated/graphql.ts": {
+      "schema": "http://localhost:3000/admin-api",
+      "documents": "src/plugins/pages/ui/**/*.graphql.ts",
+      "plugins": ["typescript", "typescript-operations", "typed-document-node"]
+    }
+  }
+}

@@ -1,0 +1,134 @@
+<vdr-page-body>
+    <vdr-page-block *ngIf="!loading && account">
+        <vdr-action-bar>
+            <vdr-ab-left></vdr-ab-left>
+            <vdr-ab-right>
+                <button class="btn btn-secondary" (click)="goBack()">
+                    <clr-icon shape="arrow-left"></clr-icon>
+                    Back to List
+                </button>
+            </vdr-ab-right>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <vdr-page-block *ngIf="loading">
+        <vdr-card>
+            <vdr-card-body>
+                <div class="flex clr-flex-row clr-justify-content-center" style="padding: 2rem">
+                    <clr-spinner clrMedium></clr-spinner>
+                    <span style="margin-left: 1rem">Loading business account...</span>
+                </div>
+            </vdr-card-body>
+        </vdr-card>
+    </vdr-page-block>
+
+    <vdr-page-detail-layout *ngIf="!loading && account">
+        <vdr-page-detail-sidebar>
+            <vdr-card>
+                <vdr-card-header>
+                    <h4>Verification Status</h4>
+                </vdr-card-header>
+                <vdr-card-body>
+                    <div class="flex clr-flex-column" style="gap: 1rem">
+                        <div>
+                            <span
+                                class="badge"
+                                [class.badge-success]="account.customFields.isVerified"
+                                [class.badge-warning]="!account.customFields.isVerified"
+                                style="font-size: 0.9rem; padding: 0.5rem 1rem"
+                            >
+                                {{ account.customFields.isVerified ? 'Verified' : 'Unverified' }}
+                            </span>
+                        </div>
+                        <div>
+                            <button
+                                class="btn btn-success"
+                                *ngIf="!account.customFields.isVerified"
+                                (click)="verifyAccount(true)"
+                            >
+                                <clr-icon shape="check-circle"></clr-icon>
+                                Verify Account
+                            </button>
+                            <button
+                                class="btn btn-warning"
+                                *ngIf="account.customFields.isVerified"
+                                (click)="verifyAccount(false)"
+                            >
+                                <clr-icon shape="times-circle"></clr-icon>
+                                Unverify Account
+                            </button>
+                        </div>
+                    </div>
+                </vdr-card-body>
+            </vdr-card>
+
+            <vdr-card>
+                <vdr-card-header>
+                    <h4>Account Information</h4>
+                </vdr-card-header>
+                <vdr-card-body>
+                    <dl class="detail-list">
+                        <dt>ID</dt>
+                        <dd>{{ account.id }}</dd>
+                        <dt>Created</dt>
+                        <dd>{{ account.createdAt | date: 'medium' }}</dd>
+                        <dt>Updated</dt>
+                        <dd>{{ account.updatedAt | date: 'medium' }}</dd>
+                    </dl>
+                </vdr-card-body>
+            </vdr-card>
+        </vdr-page-detail-sidebar>
+
+        <vdr-page-block>
+            <vdr-card>
+                <vdr-card-header>
+                    <h3>Business Account Details</h3>
+                </vdr-card-header>
+                <vdr-card-body>
+                    <div class="form-grid">
+                        <vdr-form-field label="Name">
+                            <div class="form-control-static">
+                                {{ getFullName() }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field label="Business Name">
+                            <div class="form-control-static">
+                                {{ account.customFields.businessName || '—' }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field label="Email Address">
+                            <div class="form-control-static">
+                                {{ account.emailAddress }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field label="Phone Number">
+                            <div class="form-control-static">
+                                {{ account.phoneNumber || '—' }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field label="VAT/PAN Number">
+                            <div class="form-control-static">
+                                {{ account.customFields.vatPan || '—' }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field label="Business Account">
+                            <div class="form-control-static">
+                                <span
+                                    class="badge"
+                                    [class.badge-info]="account.customFields.isBusiness"
+                                >
+                                    {{ account.customFields.isBusiness ? 'Yes' : 'No' }}
+                                </span>
+                            </div>
+                        </vdr-form-field>
+                    </div>
+                </vdr-card-body>
+            </vdr-card>
+        </vdr-page-block>
+    </vdr-page-detail-layout>
+</vdr-page-body>

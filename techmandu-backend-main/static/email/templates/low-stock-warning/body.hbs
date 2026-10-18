@@ -1,0 +1,33 @@
+mjml
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="20px" color="#F45E43" font-family="helvetica">
+          Low Stock Warning
+        </mj-text>
+        <mj-text font-size="16px" color="#000000" font-family="helvetica">
+          The following items have dropped below their stock warning threshold:
+        </mj-text>
+        
+        <mj-table>
+          <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
+            <th style="padding: 0 15px 0 0;">Product</th>
+            <th style="padding: 0 15px;">SKU</th>
+            <th style="padding: 0 0 0 15px;">Current Stock</th>
+            <th style="padding: 0 0 0 15px;">Threshold</th>
+          </tr>
+          {{#each variants}}
+          <tr>
+            <td style="padding: 0 15px 0 0;">{{ name }}</td>
+            <td style="padding: 0 15px;">{{ sku }}</td>
+            <td style="padding: 0 0 0 15px;">{{ stock }}</td>
+            <td style="padding: 0 0 0 15px;">{{ threshold }}</td>
+          </tr>
+          {{/each}}
+        </mj-table>
+
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

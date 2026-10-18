@@ -1,0 +1,116 @@
+<vdr-page-block>
+    <vdr-action-bar>
+        <vdr-ab-left>
+            <vdr-action-bar-items locationId="banner-detail"></vdr-action-bar-items>
+        </vdr-ab-left>
+        <vdr-ab-right>
+            <button class="btn btn-secondary" (click)="cancel()" type="button">
+                Cancel
+            </button>
+            <button class="btn btn-primary" (click)="createBanner()" [disabled]="form.invalid || form.pristine">
+                <clr-icon shape="check"></clr-icon>
+                {{ isNew ? 'Create Banner' : 'Update Banner' }}
+            </button>
+        </vdr-ab-right>
+    </vdr-action-bar>
+
+    <form class="form" [formGroup]="form">
+        <vdr-page-detail-layout>
+          <vdr-page-detail-sidebar>
+    <vdr-card [title]="'Banner Image'">
+        <div class="banner-image-wrapper">
+          
+            <div *ngIf="featuredAsset" class="selected-image-container" (click)="selectImage()">
+                <img 
+                    [src]="featuredAsset.preview" 
+                    [alt]="featuredAsset.name"
+                    class="banner-preview-image" />
+            </div>
+            
+           
+            <div *ngIf="!featuredAsset" class="no-image-placeholder" (click)="selectImage()">
+                <clr-icon shape="image" size="64"></clr-icon>
+                <p>No image selected</p>
+            </div>
+        </div>
+        
+        <button 
+            class="btn btn-secondary btn-block mt-2" 
+            type="button" 
+            (click)="selectImage()">
+            <clr-icon shape="image"></clr-icon>
+            {{ featuredAsset ? 'Change Image' : 'Select Image' }}
+        </button>
+        
+        <div *ngIf="isFieldInvalid('imageId')" class="error-message">
+            {{ getErrorMessage('imageId') }}
+        </div>
+    </vdr-card>
+</vdr-page-detail-sidebar>
+
+            <vdr-page-block>
+                <vdr-card>
+                    <div class="form-grid">
+                        <vdr-form-field 
+                            [label]="'Title'" 
+                            for="title">
+                            <input 
+                                id="title" 
+                                type="text" 
+                                formControlName="title"
+                                placeholder="Enter banner title"
+                                [class.is-invalid]="isFieldInvalid('title')" />
+                            <div *ngIf="isFieldInvalid('title')" class="error-message">
+                                {{ getErrorMessage('title') }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field 
+                            [label]="'CTA Text'" 
+                            for="ctaText">
+                            <input 
+                                id="ctaText" 
+                                type="text" 
+                                formControlName="ctaText"
+                                placeholder="e.g., Shop Now"
+                                [class.is-invalid]="isFieldInvalid('ctaText')" />
+                            <div *ngIf="isFieldInvalid('ctaText')" class="error-message">
+                                {{ getErrorMessage('ctaText') }}
+                            </div>
+                        </vdr-form-field>
+
+                        <vdr-form-field 
+                            [label]="'CTA Link'" 
+                            for="ctaLink" 
+                            class="form-grid-span">
+                            <input 
+                                id="ctaLink" 
+                                type="url" 
+                                formControlName="ctaLink" 
+                                placeholder="https://example.com/shop"
+                                [class.is-invalid]="isFieldInvalid('ctaLink')" />
+                            <div *ngIf="isFieldInvalid('ctaLink')" class="error-message">
+                                {{ getErrorMessage('ctaLink') }}
+                            </div>
+                        </vdr-form-field>
+                        
+                        <vdr-form-field 
+                            [label]="'Description'" 
+                            for="description" 
+                            class="form-grid-span">
+                            <textarea 
+                                id="description" 
+                                formControlName="description" 
+                                rows="5"
+                                placeholder="Enter banner description"
+                                [class.is-invalid]="isFieldInvalid('description')"></textarea>
+                            <div *ngIf="isFieldInvalid('description')" class="error-message">
+                                {{ getErrorMessage('description') }}
+                            </div>
+                        </vdr-form-field>
+                    </div>
+                </vdr-card>
+            </vdr-page-block>
+        </vdr-page-detail-layout>
+    </form>
+</vdr-page-block>

@@ -1,0 +1,50 @@
+.pan-photo-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+vdr-asset-preview {
+    display: block !important;
+    width: auto;
+    max-width: 100%; 
+    height: auto; 
+    
+
+    @media (min-width: 768px) {
+        max-width: 600px;
+    }
+
+    border: 1px solid var(--color-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+
+    ::ng-deep img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
+}
+
+.no-image-placeholder {
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+    background-color: var(--color-cancel-100);
+    border: 2px dashed var(--color-cancel-400);
+    border-radius: var(--border-radius);
+    color: var(--color-text-light);
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+    transition: all 0.2s ease-in-out;
+}

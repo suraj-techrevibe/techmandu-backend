@@ -1,0 +1,60 @@
+<vdr-page-block>
+  <vdr-action-bar>
+
+    <vdr-ab-right>
+      <button
+        class="btn btn-danger mr-2"
+        *ngIf="!isCreateMode"
+        (click)="deleteBlog()"
+      >
+        <clr-icon shape="trash"></clr-icon>
+        Delete
+      </button>
+
+      <button
+        class="btn btn-primary"
+        (click)="submit()"
+        [disabled]="form.invalid || form.pristine"
+      >
+        <clr-icon shape="check"></clr-icon>
+        {{ isCreateMode ? 'Create' : 'Update' }}
+      </button>
+    </vdr-ab-right>
+  </vdr-action-bar>
+</vdr-page-block>
+
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <vdr-page-detail-layout>
+    <!-- No Published toggle, your blog schema doesn't include it -->
+
+    <vdr-page-block>
+      <vdr-card>
+        <div class="form-group">
+          <vdr-form-field label="Name" for="name">
+            <input id="name" class="form-control" type="text" formControlName="name" />
+          </vdr-form-field>
+
+          <vdr-form-field label="Slug" for="slug">
+            <input id="slug" class="form-control" type="text" formControlName="slug" readonly />
+          </vdr-form-field>
+
+          <vdr-form-field label="Content" for="content">
+            <vdr-rich-text-editor id="content" formControlName="content"></vdr-rich-text-editor>
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Title" for="metaTitle">
+            <input id="metaTitle" class="form-control" type="text" formControlName="metaTitle" />
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Description" for="metaDescription">
+            <input id="metaDescription" class="form-control" type="text" formControlName="metaDescription" />
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Tags (comma-separated)" for="metaTags">
+            <input id="metaTags" class="form-control" type="text" formControlName="metaTags" />
+          </vdr-form-field>
+        </div>
+      </vdr-card>
+    </vdr-page-block>
+  </vdr-page-detail-layout>
+</form>

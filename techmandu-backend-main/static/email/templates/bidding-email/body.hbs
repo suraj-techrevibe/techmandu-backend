@@ -1,0 +1,87 @@
+{{> header title=emailTitle }}
+<mj-body background-color="#ffffff">
+
+  <mj-section padding-bottom="20px">
+    <mj-text
+      align="center"
+      font-size="24px"
+      font-weight="bold"
+      color="{{#if isAccepted}}#28a745{{else}}#dc3545{{/if}}"
+      line-height="1.5"
+      padding="0"
+    >
+      <strong>
+        {{#if isAccepted}}
+          Bid Accepted!
+        {{else}}
+          Bid Rejected
+        {{/if}}
+      </strong>
+    </mj-text>
+  </mj-section>
+
+  <mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+  <mj-section padding-bottom="10px">
+    <mj-text font-size="18px" color="#000000" line-height="1.5" padding="0">
+      <strong>Hello {{ sellerName }},</strong><br/><br/>
+
+      {{#if isAccepted}}
+        Congratulations! Your bid for <strong>{{ productName }}</strong> has been <strong>ACCEPTED</strong>.
+      {{else}}
+        We appreciate your interest. Unfortunately, your bid for <strong>{{ productName }}</strong> has been <strong>REJECTED</strong>.
+      {{/if}}
+    </mj-text>
+  </mj-section>
+
+  <mj-section padding="10px 0 20px 0">
+    <mj-column>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Product:</strong> {{ productName }}
+      </mj-text>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Bid Amount:</strong> {{ bidAmount }}
+      </mj-text>
+
+       <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Status:</strong>
+        <span style="color: {{#if isAccepted}}#28a745{{else}}#dc3545{{/if}};">
+            {{#if isAccepted}}Accepted{{else}}Rejected{{/if}}
+        </span>
+      </mj-text>
+
+      <mj-text font-size="16px" color="#000000" line-height="1.8" padding="5px 0">
+        <strong>Business Name:</strong> {{ businessName }}
+      </mj-text>
+
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding-bottom="20px">
+    <mj-column>
+      <mj-button
+        font-family="Helvetica"
+        font-size="16px"
+        background-color="#F15A27"
+        color="white"
+        border-radius="10px"
+        width="100%"
+        height="50px"
+        padding="20px 0"
+        href="{{ bidDashboardUrl }}"
+      >
+        View Details
+      </mj-button>
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding-bottom="20px">
+    <mj-text font-size="16px" color="#000000" line-height="1.6" padding="0">
+      If you have any questions regarding this decision, please contact our support team.<br/><br/>
+      <strong>Thank you,<br/>Techmandu Team</strong>
+    </mj-text>
+  </mj-section>
+
+{{> footer }}

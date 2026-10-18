@@ -1,0 +1,51 @@
+.banner-image-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.banner-thumbnail {
+    max-width: 80px;
+    max-height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.no-image-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 60px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    color: #ccc;
+}
+
+.description-preview {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.cta-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cta-text {
+    font-weight: 500;
+}
+
+.cta-link {
+    color: #0072a3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    
+    &:hover {
+        color: #005a82;
+    }
+}

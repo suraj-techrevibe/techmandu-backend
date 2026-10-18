@@ -1,0 +1,77 @@
+{{> header title="Seller Registration Verified" }}
+
+<mj-section padding-bottom="20px">
+  <mj-text align="center" font-size="24px" font-weight="bold" color="#000000" line-height="1.5" padding="0">
+    <strong>Your seller account is verified, {{ seller.businessName }}!</strong>
+  </mj-text>
+</mj-section>
+
+<mj-divider border-color="#e8e6f6" border-width="1px" padding="20px 0" />
+
+<mj-section padding-bottom="12px">
+  <mj-text font-size="18px" color="#000000" line-height="1.7" padding="0">
+    Your <strong>Seller Registration</strong> has been approved. You can now access your dashboard to configure your store and start selling.
+  </mj-text>
+</mj-section>
+
+<mj-section padding="0">
+  <mj-text font-size="16px" color="#000000" line-height="1.8" padding="0 0 10px 0">
+    <strong>Login credentials</strong>
+  </mj-text>
+
+  <mj-column>
+    <mj-text padding="0">
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:separate;border-spacing:0;background:#f7f8fb;border:1px solid #e8e6f6;border-radius:10px">
+        <tr>
+          <td style="padding:12px 16px;font-family:Helvetica,Arial,sans-serif;font-size:14px;color:#111">
+            <div style="margin:6px 0"><strong>Username</strong><br/>{{ username }}</div>
+            <div style="margin:6px 0"><strong>Temporary password</strong><br/>{{ password }}</div>
+          </td>
+        </tr>
+      </table>
+    </mj-text>
+    <mj-text font-size="13px" color="#6b7280" padding="8px 0 0 0" line-height="1.6">
+      For your security, please <strong>change your password immediately</strong> after your first login.
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+<mj-section padding-top="16px" padding-bottom="8px">
+  <mj-column>
+    <mj-button
+      font-family="Helvetica"
+      font-size="16px"
+      background-color="#357d8a"
+      color="white"
+      border-radius="10px"
+      width="100%"
+      height="50px"
+      padding="16px 0"
+      href="{{ loginDashboardUrl }}"
+      aria-label="Open Seller Dashboard">
+      Open Dashboard
+    </mj-button>
+  </mj-column>
+</mj-section>
+
+<mj-section padding-bottom="8px">
+  <mj-text font-size="18px" color="#000000" line-height="1.7" padding="0">
+    <strong>Next steps</strong>
+    <ul style="padding-left:18px; margin:8px 0;">
+      <li>Log in using the credentials above</li>
+      <li>Change your password (Settings → Adminstrator)</li>
+      <li>Complete store profile, tax & shipping settings</li>
+      <li>Add products and publish your storefront</li>
+    </ul>
+  </mj-text>
+</mj-section>
+
+<mj-section padding-bottom="20px">
+  <mj-text font-size="16px" color="#000000" line-height="1.7" padding="0">
+    If you did not request this, please contact support immediately.
+    <br/><br/>
+    <strong>Thank you,<br/>Techmandu TEAM</strong>
+  </mj-text>
+</mj-section>
+
+{{> footer }}

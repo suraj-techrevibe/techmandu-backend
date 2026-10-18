@@ -1,0 +1,62 @@
+<vdr-page-body>
+  <vdr-page-block>
+    <vdr-action-bar>
+      <vdr-ab-left>
+      </vdr-ab-left>
+      <vdr-ab-right>
+        <!-- <button class="btn btn-primary" (click)="exportCsv()" [disabled]="(totalItems$ | async) === 0">
+          Export CSV
+        </button> -->
+      </vdr-ab-right>
+    </vdr-action-bar>
+  </vdr-page-block>
+
+  <div style="margin-top: 2em"></div>
+
+  <vdr-data-table-2
+    id="customer-promotion-usage-list"
+    [items]="(items$ | async) || []"
+    [itemsPerPage]="(itemsPerPage$ | async) ?? defaultItemsPerPage"
+    [totalItems]="(totalItems$ | async) ?? 0"
+    [currentPage]="currentPage$ | async"
+    [filters]="[]"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+  >
+    <vdr-dt2-column id="name" heading="Customer">
+      <ng-template let-row="item">
+        {{ (row.customer.firstName || '') + ' ' + (row.customer.lastName || '') }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="email" heading="Email">
+      <ng-template let-row="item">
+        {{ row.customer.email || '—' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="coupon" heading="Coupon Code">
+      <ng-template let-row="item">
+        {{ row.couponCode }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="currency" heading="Currency">
+      <ng-template let-row="item">
+        {{ row.currencyCode }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="order" heading="Order">
+      <ng-template let-row="item">
+        <a [routerLink]="['/orders', row.orderId]">{{ row.orderId }}</a>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column id="created" heading="Created">
+      <ng-template let-row="item">
+        {{ row.createdAt | date:'medium' }}
+      </ng-template>
+    </vdr-dt2-column>
+  </vdr-data-table-2>
+</vdr-page-body>

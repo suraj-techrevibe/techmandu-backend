@@ -1,0 +1,53 @@
+<vdr-page-block>
+  <vdr-action-bar>
+
+    <vdr-ab-right>
+      <button
+        class="btn btn-primary"
+        (click)="createBlog()"
+        [disabled]="blogForm.invalid || blogForm.pristine"
+      >
+        Create
+      </button>
+    </vdr-ab-right>
+  </vdr-action-bar>
+</vdr-page-block>
+
+<form class="form" [formGroup]="blogForm" (ngSubmit)="createBlog()">
+  <vdr-page-detail-layout>
+    <vdr-page-block>
+      <vdr-card>
+        <div class="form-group">
+          <vdr-form-field label="Name" for="name">
+            <input id="name" class="form-control" type="text" formControlName="name" />
+          </vdr-form-field>
+
+          <vdr-form-field label="Slug" for="slug">
+            <input id="slug" class="form-control" type="text" formControlName="slug" readonly />
+          </vdr-form-field>
+
+          <vdr-form-field label="Content" for="content">
+            <vdr-rich-text-editor id="content" formControlName="content"></vdr-rich-text-editor>
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Title" for="metaTitle">
+            <input id="metaTitle" class="form-control" type="text" formControlName="metaTitle" />
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Description" for="metaDescription">
+            <textarea
+              id="metaDescription"
+              class="form-control"
+              rows="3"
+              formControlName="metaDescription"
+            ></textarea>
+          </vdr-form-field>
+
+          <vdr-form-field label="Meta Tags (comma-separated)" for="metaTags">
+            <input id="metaTags" class="form-control" type="text" formControlName="metaTags" />
+          </vdr-form-field>
+        </div>
+      </vdr-card>
+    </vdr-page-block>
+  </vdr-page-detail-layout>
+</form>

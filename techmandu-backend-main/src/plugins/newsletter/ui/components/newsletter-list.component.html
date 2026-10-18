@@ -1,0 +1,64 @@
+<vdr-page-body>
+    <vdr-page-block>
+        <vdr-action-bar>
+            <vdr-ab-left>
+                <p class="vdr-page-description">
+                    All newsletter signups from your shop, ready to export or manage.
+                </p>
+            </vdr-ab-left>
+            <vdr-ab-right>
+                <button
+                    class="btn btn-primary"
+                    (click)="exportCsv()"
+                    [disabled]="(totalItems$ | async) === 0"
+                >
+                    Export CSV
+                </button>
+            </vdr-ab-right>
+        </vdr-action-bar>
+    </vdr-page-block>
+
+    <div style="margin-top: 2em"></div>
+    <vdr-data-table-2
+        id="newsletter-subscriber-list"
+        [items]="(items$ | async) || []"
+        [itemsPerPage]="(itemsPerPage$ | async) ?? defaultItemsPerPage"
+        [totalItems]="(totalItems$ | async) ?? 0"
+        [currentPage]="currentPage$ | async"
+        [filters]="[]"
+        (pageChange)="setPageNumber($event)"
+        (itemsPerPageChange)="setItemsPerPage($event)"
+    >
+        <vdr-dt2-column id="email" heading="Email">
+            <ng-template let-subscriber="item">
+                {{ subscriber.email }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column *ngIf="hasNameColumn$ | async" id="name" heading="Name">
+            <ng-template let-subscriber="item">
+                {{ subscriber.name || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="source" heading="Source">
+            <ng-template let-subscriber="item">
+                {{ subscriber.source || '—' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="created" heading="Created">
+            <ng-template let-subscriber="item">
+                {{ subscriber.createdAt | date: 'medium' }}
+            </ng-template>
+        </vdr-dt2-column>
+
+        <vdr-dt2-column id="actions" heading="Actions">
+            <ng-template let-subscriber="item">
+                <button class="button-ghost" (click)="deleteSubscriber(subscriber.id)" title="Delete">
+                    <clr-icon shape="trash"></clr-icon>
+                </button>
+            </ng-template>
+        </vdr-dt2-column>
+    </vdr-data-table-2>
+</vdr-page-body>
