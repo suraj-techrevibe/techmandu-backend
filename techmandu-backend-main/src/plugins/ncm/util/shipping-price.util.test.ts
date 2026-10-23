@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   codAmountNpr,
+  getRegionalFallbackNpr,
   isValleyAddress,
   normaliseNepalPhone,
   nprToMinorUnits,
@@ -143,5 +144,29 @@ describe("resolveNepalProvince", () => {
     assert.equal(resolveNepalProvince("Pokhara"), undefined);
     assert.equal(resolveNepalProvince(""), undefined);
     assert.equal(resolveNepalProvince(undefined), undefined);
+  });
+});
+
+
+describe("getRegionalFallbackNpr", () => {
+  const regionalRates = {
+    koshi: 180,
+    madhesh: 200,
+    bagmati: 0,
+    gandaki: 250,
+    lumbini: undefined,
+    karnali: 300,
+    sudurpashchim: 350,
+  };
+
+  it("returns the configured positive rate for the resolved region", () => {
+    assert.equal(getRegionalFallbackNpr("Koshi Province", regionalRates), 180);
+    assert.equal(getRegionalFallbackNpr("Province 4", regionalRates), 250);
+  });
+
+  it("does not invent a fee for unknown or unconfigured regions", () => {
+    assert.equal(getRegionalFallbackNpr("Pokhara", regionalRates), undefined);
+    assert.equal(getRegionalFallbackNpr("Bagmati", regionalRates), undefined);
+    assert.equal(getRegionalFallbackNpr("Lumbini", regionalRates), undefined);
   });
 });
