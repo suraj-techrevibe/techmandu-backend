@@ -21,10 +21,8 @@ export const ncmChecker = new ShippingEligibilityChecker({
     if (!ncmService) {
       return false;
     }
-    if (!(await ncmService.hasActiveChannelConfig(ctx))) {
-      return false;
-    }
-
+    // Keep the option eligible without NCM credentials; the calculator will use
+    // the configured regional fallback rate when the live quote is unavailable.
     if (!shippingAddress || !shippingAddress.countryCode) {
       return true;
     }
