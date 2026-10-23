@@ -1,0 +1,6 @@
+Add to package.json "scripts" (next to "dev"):
+    "seed": "ts-node src/seed.ts",
+    "seed:reset": "ts-node src/seed.ts --reset",
+
+Add to .gitignore:
+src/data/assets

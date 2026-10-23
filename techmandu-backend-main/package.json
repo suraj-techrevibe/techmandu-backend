@@ -7,6 +7,8 @@
     "dev:worker": "ts-node ./src/index-worker.ts",
     "prod": "node dist/src/index-worker.js & node dist/src/index.js",
     "dev": "concurrently yarn:dev:*",
+      "seed": "ts-node src/seed.ts",
+  "seed:reset": "ts-node src/seed.ts --reset",
     "build": "./build.sh",
     "build:ui": "rm -rf src/custom-admin-ui/admin-ui && ts-node src/custom-admin-ui/compile-admin-ui.ts",
     "start:server": "node ./dist/index.js",
@@ -18,7 +20,9 @@
     "codegen": "graphql-codegen --config codegen.json",
     "prepare": "husky",
     "test": "echo 'No tests configured yet.' && exit 0",
-    "commit": "cz"
+    "commit": "cz",
+    "seed:repair": "ts-node src/repair-seed.ts",
+    "seed:full": "ts-node src/seed.ts"
   },
   "config": {
     "commitizen": {
@@ -49,6 +53,7 @@
     "adm-zip": "^0.5.16",
     "aws-sdk": "^2.1494.0",
     "axios": "1.13.5",
+    "concurrently": "^9.2.1",
     "crypto-js": "^4.2.0",
     "dotenv": "16.5.0",
     "google-auth-library": "^10.5.0",
@@ -83,6 +88,7 @@
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "5.8.2"
   }

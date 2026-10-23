@@ -4,6 +4,6 @@ admin-ui
 static/assets
 static/email/test-emails
 .cursor
-
+  src/data/assets
 
 .env
