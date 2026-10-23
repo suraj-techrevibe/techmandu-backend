@@ -11,7 +11,13 @@ import {
   INSIDE_VALLEY_SHIPPING_CALCULATOR,
   NCM_SHIPPING_CALCULATOR,
 } from "../contstants";
-import { nprToMinorUnits, NprRates, parseRingRoadZone } from "../util/shipping-price.util";
+import {
+  isValleyAddress,
+  nprToMinorUnits,
+  NprRates,
+  parseRingRoadZone,
+  resolveNepalProvince,
+} from "../util/shipping-price.util";
 
 const LOGGER_CONTEXT = "Shipping";
 
@@ -40,7 +46,15 @@ export const NcmShippingCalculator = new ShippingCalculator({
   description: [
     { languageCode: LanguageCode.en, value: "NCM Shipping Calculator" },
   ],
-  args: {},
+  args: {
+    koshiNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Koshi fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    madheshNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Madhesh fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    bagmatiNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Bagmati fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    gandakiNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Gandaki fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    lumbiniNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Lumbini fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    karnaliNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Karnali fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+    sudurpashchimNpr: { type: "int", defaultValue: 0, label: [{ languageCode: LanguageCode.en, value: "Sudurpashchim fallback fee (NPR)" }], ui: { component: "number-form-input", suffix: "NPR" } },
+  },
   init: (injector: Injector) => {
     ncmService = injector.get(NcmService);
     settingsService = injector.get(GlobalSettingsService);
@@ -49,32 +63,82 @@ export const NcmShippingCalculator = new ShippingCalculator({
     try {
       // NCM always quotes in NPR. The service returns NPR paisa and caches the NPR quote,
       // so it stays correct if the buyer switches the order to USD or AUD.
+      let quoteError: string | undefined;
+    try {
       const quote = await ncmService.getDeliveryAmount(ctx, order, "Pickup/Collect");
       if (quote.metadata?.failed) {
-        // Returning nothing hides the method. Returning 0 would show free delivery.
-        Logger.warn(
-          `NCM hidden for order ${order.code}: ${quote.metadata.error}`,
-          LOGGER_CONTEXT
-        );
-        return undefined;
+        quoteError = String(quote.metadata.error ?? "NCM could not quote this address");
+      } else {
+        const price = nprToMinorUnits(quote.price / 100, order.currencyCode, await loadRates(ctx));
+        if (price !== undefined) {
+          return result(price, { ...quote.metadata, nprCharge: quote.price / 100 });
+        }
+        quoteError = `no exchange rate for ${order.currencyCode}`;
       }
-      const price = nprToMinorUnits(quote.price / 100, order.currencyCode, await loadRates(ctx));
-      if (price === undefined) {
-        Logger.error(
-          `NCM hidden for order ${order.code}: no exchange rate for ${order.currencyCode}`,
-          LOGGER_CONTEXT
-        );
-        return undefined;
-      }
-      return result(price, { ...quote.metadata, nprCharge: quote.price / 100 });
     } catch (error) {
-      // An error here would otherwise break the whole shipping list, hiding Inside Valley and pickup too.
-      Logger.error(
-        `NCM quote failed for order ${order.code}: ${error instanceof Error ? error.message : String(error)}`,
+      quoteError = error instanceof Error ? error.message : String(error);
+      Logger.warn(
+        `NCM live quote unavailable for order ${order.code}: ${quoteError}`,
+        LOGGER_CONTEXT
+      );
+    }
+
+    // The fallback is deliberately outside the Kathmandu Valley. Inside-Valley delivery
+    // has its own calculator and should not inherit an intercity courier fee.
+    const address = order.shippingAddress;
+    if (
+      !address ||
+      String(address.countryCode ?? "").toUpperCase() !== "NP" ||
+      !String(address.streetLine1 ?? "").trim() ||
+      !String(address.city ?? "").trim() ||
+      isValleyAddress(address)
+    ) {
+      Logger.warn(
+        `NCM hidden for order ${order.code}: no usable outside-Valley fallback address`,
         LOGGER_CONTEXT
       );
       return undefined;
     }
+
+    const region = resolveNepalProvince(address.province);
+    const fallbackRates = {
+      koshi: args.koshiNpr,
+      madhesh: args.madheshNpr,
+      bagmati: args.bagmatiNpr,
+      gandaki: args.gandakiNpr,
+      lumbini: args.lumbiniNpr,
+      karnali: args.karnaliNpr,
+      sudurpashchim: args.sudurpashchimNpr,
+    };
+    const fallbackNpr = region ? fallbackRates[region] : undefined;
+    if (typeof fallbackNpr !== "number" || !Number.isFinite(fallbackNpr) || fallbackNpr <= 0) {
+      Logger.warn(
+        `NCM hidden for order ${order.code}: no positive fallback price configured for region ${region ?? "unknown"}`,
+        LOGGER_CONTEXT
+      );
+      return undefined;
+    }
+
+    const fallbackPrice = nprToMinorUnits(fallbackNpr, order.currencyCode, await loadRates(ctx));
+    if (fallbackPrice === undefined) {
+      Logger.error(
+        `NCM hidden for order ${order.code}: no exchange rate for ${order.currencyCode}`,
+        LOGGER_CONTEXT
+      );
+      return undefined;
+    }
+    Logger.warn(
+      `Using regional NCM fallback for order ${order.code}: ${region}, NPR ${fallbackNpr}; live quote unavailable (${quoteError ?? "unknown error"})`,
+      LOGGER_CONTEXT
+    );
+    return result(fallbackPrice, {
+      success: true,
+      fallback: true,
+      source: "regional-fallback",
+      region,
+      nprCharge: fallbackNpr,
+      liveQuoteError: quoteError,
+    });
   },
 });
 
