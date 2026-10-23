@@ -69,6 +69,19 @@ export function resolveNepalProvince(value: string | null | undefined): NepalPro
   return undefined;
 }
 
+/** Returns a configured positive NPR fallback fee for the supplied province. */
+export function getRegionalFallbackNpr(
+  province: string | null | undefined,
+  rates: Partial<Record<NepalProvince, number | undefined>>
+): number | undefined {
+  const region = resolveNepalProvince(province);
+  if (!region) return undefined;
+  const amount = rates[region];
+  return typeof amount === "number" && Number.isFinite(amount) && amount > 0
+    ? amount
+    : undefined;
+}
+
 /**
  * Reads the ring road zone from the address. Accepts the legacy machine values
  * ("inside_ring_road") and plain text typed by a customer ("Outside Ring Road, Koteshwor").
