@@ -12,6 +12,7 @@ import {
   NCM_SHIPPING_CALCULATOR,
 } from "../contstants";
 import {
+  getRegionalFallbackNpr,
   isValleyAddress,
   nprToMinorUnits,
   NprRates,
@@ -101,7 +102,6 @@ export const NcmShippingCalculator = new ShippingCalculator({
       return undefined;
     }
 
-    const region = resolveNepalProvince(address.province);
     const fallbackRates = {
       koshi: args.koshiNpr,
       madhesh: args.madheshNpr,
@@ -111,12 +111,9 @@ export const NcmShippingCalculator = new ShippingCalculator({
       karnali: args.karnaliNpr,
       sudurpashchim: args.sudurpashchimNpr,
     };
-    const fallbackNpr = region ? fallbackRates[region] : undefined;
-    if (
-      typeof fallbackNpr !== "number" ||
-      !Number.isFinite(fallbackNpr) ||
-      fallbackNpr <= 0
-    ) {
+    const region = resolveNepalProvince(address.province);
+    const fallbackNpr = getRegionalFallbackNpr(address.province, fallbackRates);
+    if (fallbackNpr === undefined) {
       Logger.warn(
         `NCM hidden for order ${order.code}: no positive fallback price configured for region ${region ?? "unknown"}`,
         LOGGER_CONTEXT
@@ -124,11 +121,17 @@ export const NcmShippingCalculator = new ShippingCalculator({
       return undefined;
     }
 
-    const fallbackPrice = nprToMinorUnits(
-      fallbackNpr,
-      order.currencyCode,
-      await loadRates(ctx)
-    );
+    let rates: NprRates;
+    try {
+      rates = await loadRates(ctx);
+    } catch (error) {
+      Logger.error(
+        `NCM hidden for order ${order.code}: unable to load currency rates: ${error instanceof Error ? error.message : String(error)}`,
+        LOGGER_CONTEXT
+      );
+      return undefined;
+    }
+    const fallbackPrice = nprToMinorUnits(fallbackNpr, order.currencyCode, rates);
     if (fallbackPrice === undefined) {
       Logger.error(
         `NCM hidden for order ${order.code}: no exchange rate for ${order.currencyCode}`,
