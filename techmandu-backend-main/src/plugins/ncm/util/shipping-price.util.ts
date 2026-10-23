@@ -16,6 +16,7 @@ export interface AddressLike {
   streetLine1?: string | null;
   streetLine2?: string | null;
   countryCode?: string | null;
+  province?: string | null;
 }
 
 const isUsableRate = (rate: unknown): rate is number =>
@@ -45,6 +46,41 @@ const normalise = (text: string) =>
     .replace(/[_\-.,]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+export type NepalProvince =
+  | "koshi"
+  | "madhesh"
+  | "bagmati"
+  | "gandaki"
+  | "lumbini"
+  | "karnali"
+  | "sudurpashchim";
+
+/** Resolve common province names and legacy province numbers without guessing from the city. */
+export function resolveNepalProvince(value: string | null | undefined): NepalProvince | undefined {
+  const province = normalise(value ?? "");
+  if (/\b(koshi|province 1|province no 1)\b/.test(province)) return "koshi";
+  if (/\b(madhesh|madhesh province|province 2|province no 2)\b/.test(province)) return "madhesh";
+  if (/\b(bagmati|province 3|province no 3)\b/.test(province)) return "bagmati";
+  if (/\b(gandaki|province 4|province no 4)\b/.test(province)) return "gandaki";
+  if (/\b(lumbini|province 5|province no 5)\b/.test(province)) return "lumbini";
+  if (/\b(karnali|province 6|province no 6)\b/.test(province)) return "karnali";
+  if (/\b(sudurpashchim|sudurpaschim|province 7|province no 7)\b/.test(province)) return "sudurpashchim";
+  return undefined;
+}
+
+/** Returns a configured positive NPR fallback fee for the supplied province. */
+export function getRegionalFallbackNpr(
+  province: string | null | undefined,
+  rates: Partial<Record<NepalProvince, number | undefined>>
+): number | undefined {
+  const region = resolveNepalProvince(province);
+  if (!region) return undefined;
+  const amount = rates[region];
+  return typeof amount === "number" && Number.isFinite(amount) && amount > 0
+    ? amount
+    : undefined;
+}
 
 /**
  * Reads the ring road zone from the address. Accepts the legacy machine values
