@@ -3,6 +3,7 @@ import { NcmService } from "../service/ncm.service";
 import { computeNearestBranch } from "../util/branch-match.util";
 import { geocodeAddress } from "../util/geocode.util";
 import { haversineDistance } from "../util/distance-compute.util";
+import { isValleyAddress, parseAreaList } from "../util/shipping-price.util";
 let ncmService: NcmService | undefined;
 
 export const ncmChecker = new ShippingEligibilityChecker({
@@ -58,10 +59,28 @@ export const insideValleyChecker = new ShippingEligibilityChecker({
   description: [
     { languageCode: LanguageCode.en, value: "Inside Valley value" },
   ],
-  args: {},
+  args: {
+    extraAreas: {
+      type: "string",
+      defaultValue: "",
+      label: [{ languageCode: LanguageCode.en, value: "Extra Valley areas" }],
+      description: [
+        {
+          languageCode: LanguageCode.en,
+          value: "Comma separated area names to treat as inside the Valley, for example: Sunakothi, Dhapasi",
+        },
+      ],
+    },
+  },
 
   check: async (ctx, order, args) => {
-    // Allow when outOfValley is not set or explicitly false
-    return !order.customFields?.outOfValley;
+    if (order.customFields?.outOfValley) return false;
+
+    const address = order.shippingAddress;
+    // No address yet: stay available so the method is listed before the address is entered.
+    if (!address || !address.countryCode) return true;
+    if (String(address.countryCode).toUpperCase() !== "NP") return false;
+
+    return isValleyAddress(address, parseAreaList(args.extraAreas));
   },
 });

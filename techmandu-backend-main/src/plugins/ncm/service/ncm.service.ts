@@ -10,9 +10,11 @@ import {
   ID,
   Order,
   Channel,
+  GlobalSettingsService,
   Logger,
 } from "@vendure/core";
 import { NCM_SHIPPING_CALCULATOR, NCM_SHIPPING_METHOD_CODE } from "../contstants";
+import { codAmountNpr, normaliseNepalPhone, NprRates } from "../util/shipping-price.util";
 
 @Injectable()
 export class NcmService {
@@ -255,7 +257,20 @@ export class NcmService {
       });
     }
   }
-  constructor(private readonly connection: TransactionalConnection) {}
+  constructor(
+    private readonly connection: TransactionalConnection,
+    private readonly settingsService: GlobalSettingsService
+  ) {}
+
+  /** NPR-per-USD / NPR-per-AUD from Settings → Global settings. */
+  private async getNprRates(ctx: RequestContext): Promise<NprRates> {
+    const settings = await this.settingsService.getSettings(ctx);
+    const fields = (settings.customFields ?? {}) as unknown as Record<string, unknown>;
+    return {
+      USD: fields.nprEquivalentToUsd as number | undefined,
+      AUD: fields.nprEquvalentToAud as number | undefined,
+    };
+  }
 
   async getDeliveryAmount(
     ctx: RequestContext,
@@ -381,7 +396,7 @@ export class NcmService {
       // ]);
       const order = await orderRepo.findOne({
         where: { id: orderId },
-        relations: ["lines", "customer", "shippingLines", "shippingLines.shippingMethod","surcharges"],
+        relations: ["lines", "customer", "shippingLines", "shippingLines.shippingMethod", "surcharges", "payments"],
       });
       if (!order) {
         Logger.warn(`Order with ID ${orderId} not found`, "NcmService");
@@ -432,15 +447,41 @@ export class NcmService {
       ]
         .map((part) => (typeof part === "string" ? part.trim() : part))
         .filter(Boolean);
+      // NCM calls this number on delivery day, so never send a made-up one.
+      const phone = normaliseNepalPhone(order.shippingAddress?.phoneNumber);
+      if (!phone) {
+        Logger.error(
+          `Order ${order.code || orderId} has no valid recipient phone number. NCM needs one to deliver.`,
+          "NcmService"
+        );
+        continue;
+      }
+      const backupPhone = normaliseNepalPhone(order.customer?.phoneNumber);
+
+      // Prepaid orders must ask the recipient for 0. Only cash on delivery (or an unpaid rest) is collected.
+      const codCharge = codAmountNpr(
+        order.totalWithTax,
+        order.currencyCode,
+        order.payments ?? [],
+        await this.getNprRates(ctx)
+      );
+      if (codCharge === undefined) {
+        Logger.error(
+          `Order ${order.code || orderId}: cash to collect cannot be worked out, no exchange rate for ${order.currencyCode}`,
+          "NcmService"
+        );
+        continue;
+      }
+
       const params = {
         name: order.shippingAddress.fullName ??
         `${order.customer?.firstName ?? "Techmandu"}
          ${order.customer?.lastName ?? ""}`.trim() 
          ?? "unknown",
          // remove initial +977 if present
-        phone: order.shippingAddress.phoneNumber?.replace(/^\+977/, '') ?? '9768520433',
-        phone2: '9768520433',
-        cod_charge: order.total,
+        phone,
+        ...(backupPhone && backupPhone !== phone ? { phone2: backupPhone } : {}),
+        cod_charge: codCharge,
         address: addressParts.join(", "),
         fbranch: channelConfig.creationBranch,
         branch: destination,
