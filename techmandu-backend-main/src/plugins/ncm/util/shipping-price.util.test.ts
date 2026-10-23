@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   codAmountNpr,
+  getRegionalFallbackNpr,
   isValleyAddress,
   normaliseNepalPhone,
   nprToMinorUnits,
   parseAreaList,
   parseRingRoadZone,
+  resolveNepalProvince,
 } from "./shipping-price.util";
 
 const rates = { USD: 140, AUD: 92 };
@@ -122,5 +124,49 @@ describe("normaliseNepalPhone", () => {
     assert.equal(normaliseNepalPhone(""), undefined);
     assert.equal(normaliseNepalPhone(undefined), undefined);
     assert.equal(normaliseNepalPhone("12345"), undefined);
+  });
+});
+
+
+describe("resolveNepalProvince", () => {
+  it("recognises current province names and legacy numbered names", () => {
+    assert.equal(resolveNepalProvince("Koshi Province"), "koshi");
+    assert.equal(resolveNepalProvince("Province 1"), "koshi");
+    assert.equal(resolveNepalProvince("Madhesh"), "madhesh");
+    assert.equal(resolveNepalProvince("Bagmati Province"), "bagmati");
+    assert.equal(resolveNepalProvince("Province 4"), "gandaki");
+    assert.equal(resolveNepalProvince("Lumbini"), "lumbini");
+    assert.equal(resolveNepalProvince("Karnali Province"), "karnali");
+    assert.equal(resolveNepalProvince("Sudurpashchim Province"), "sudurpashchim");
+  });
+
+  it("does not guess a province from a city or blank value", () => {
+    assert.equal(resolveNepalProvince("Pokhara"), undefined);
+    assert.equal(resolveNepalProvince(""), undefined);
+    assert.equal(resolveNepalProvince(undefined), undefined);
+  });
+});
+
+
+describe("getRegionalFallbackNpr", () => {
+  const regionalRates = {
+    koshi: 180,
+    madhesh: 200,
+    bagmati: 0,
+    gandaki: 250,
+    lumbini: undefined,
+    karnali: 300,
+    sudurpashchim: 350,
+  };
+
+  it("returns the configured positive rate for the resolved region", () => {
+    assert.equal(getRegionalFallbackNpr("Koshi Province", regionalRates), 180);
+    assert.equal(getRegionalFallbackNpr("Province 4", regionalRates), 250);
+  });
+
+  it("does not invent a fee for unknown or unconfigured regions", () => {
+    assert.equal(getRegionalFallbackNpr("Pokhara", regionalRates), undefined);
+    assert.equal(getRegionalFallbackNpr("Bagmati", regionalRates), undefined);
+    assert.equal(getRegionalFallbackNpr("Lumbini", regionalRates), undefined);
   });
 });
