@@ -7,6 +7,7 @@ import {
   nprToMinorUnits,
   parseAreaList,
   parseRingRoadZone,
+  resolveNepalProvince,
 } from "./shipping-price.util";
 
 const rates = { USD: 140, AUD: 92 };
@@ -122,5 +123,25 @@ describe("normaliseNepalPhone", () => {
     assert.equal(normaliseNepalPhone(""), undefined);
     assert.equal(normaliseNepalPhone(undefined), undefined);
     assert.equal(normaliseNepalPhone("12345"), undefined);
+  });
+});
+
+
+describe("resolveNepalProvince", () => {
+  it("recognises current province names and legacy numbered names", () => {
+    assert.equal(resolveNepalProvince("Koshi Province"), "koshi");
+    assert.equal(resolveNepalProvince("Province 1"), "koshi");
+    assert.equal(resolveNepalProvince("Madhesh"), "madhesh");
+    assert.equal(resolveNepalProvince("Bagmati Province"), "bagmati");
+    assert.equal(resolveNepalProvince("Province 4"), "gandaki");
+    assert.equal(resolveNepalProvince("Lumbini"), "lumbini");
+    assert.equal(resolveNepalProvince("Karnali Province"), "karnali");
+    assert.equal(resolveNepalProvince("Sudurpashchim Province"), "sudurpashchim");
+  });
+
+  it("does not guess a province from a city or blank value", () => {
+    assert.equal(resolveNepalProvince("Pokhara"), undefined);
+    assert.equal(resolveNepalProvince(""), undefined);
+    assert.equal(resolveNepalProvince(undefined), undefined);
   });
 });
