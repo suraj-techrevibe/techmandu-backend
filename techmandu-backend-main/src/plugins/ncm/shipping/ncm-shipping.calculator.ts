@@ -59,17 +59,18 @@ export const NcmShippingCalculator = new ShippingCalculator({
     ncmService = injector.get(NcmService);
     settingsService = injector.get(GlobalSettingsService);
   },
-  calculate: async (ctx, order) => {
-    try {
-      // NCM always quotes in NPR. The service returns NPR paisa and caches the NPR quote,
-      // so it stays correct if the buyer switches the order to USD or AUD.
-      let quoteError: string | undefined;
+  calculate: async (ctx, order, args) => {
+    let quoteError: string | undefined;
     try {
       const quote = await ncmService.getDeliveryAmount(ctx, order, "Pickup/Collect");
       if (quote.metadata?.failed) {
         quoteError = String(quote.metadata.error ?? "NCM could not quote this address");
       } else {
-        const price = nprToMinorUnits(quote.price / 100, order.currencyCode, await loadRates(ctx));
+        const price = nprToMinorUnits(
+          quote.price / 100,
+          order.currencyCode,
+          await loadRates(ctx)
+        );
         if (price !== undefined) {
           return result(price, { ...quote.metadata, nprCharge: quote.price / 100 });
         }
@@ -111,7 +112,11 @@ export const NcmShippingCalculator = new ShippingCalculator({
       sudurpashchim: args.sudurpashchimNpr,
     };
     const fallbackNpr = region ? fallbackRates[region] : undefined;
-    if (typeof fallbackNpr !== "number" || !Number.isFinite(fallbackNpr) || fallbackNpr <= 0) {
+    if (
+      typeof fallbackNpr !== "number" ||
+      !Number.isFinite(fallbackNpr) ||
+      fallbackNpr <= 0
+    ) {
       Logger.warn(
         `NCM hidden for order ${order.code}: no positive fallback price configured for region ${region ?? "unknown"}`,
         LOGGER_CONTEXT
@@ -119,7 +124,11 @@ export const NcmShippingCalculator = new ShippingCalculator({
       return undefined;
     }
 
-    const fallbackPrice = nprToMinorUnits(fallbackNpr, order.currencyCode, await loadRates(ctx));
+    const fallbackPrice = nprToMinorUnits(
+      fallbackNpr,
+      order.currencyCode,
+      await loadRates(ctx)
+    );
     if (fallbackPrice === undefined) {
       Logger.error(
         `NCM hidden for order ${order.code}: no exchange rate for ${order.currencyCode}`,
