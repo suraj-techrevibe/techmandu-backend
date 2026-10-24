@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  toBookingOutcomes,
   dedupeOrderIds,
   failureMessage,
   trackingCodeOf,
@@ -51,5 +52,18 @@ describe("failureMessage", () => {
       failed: [{ orderId: 1, orderCode: "X", reason: "timeout" }],
     });
     assert.doesNotMatch(msg, /Already booked/);
+  });
+});
+
+describe("toBookingOutcomes", () => {
+  it("lists booked and failed orders together", () => {
+    const out = toBookingOutcomes({
+      booked: [{ orderId: 1, orderCode: "A", trackingId: "T1", alreadyBooked: true }],
+      failed: [{ orderId: 2, orderCode: "B", reason: "no phone" }],
+    });
+    assert.deepEqual(out, [
+      { orderId: "1", orderCode: "A", trackingId: "T1", alreadyBooked: true, error: null },
+      { orderId: "2", orderCode: "B", trackingId: null, alreadyBooked: false, error: "no phone" },
+    ]);
   });
 });

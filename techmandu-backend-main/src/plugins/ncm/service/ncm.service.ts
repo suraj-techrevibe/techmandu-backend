@@ -14,6 +14,7 @@ import {
   Logger,
 } from "@vendure/core";
 import { NCM_SHIPPING_CALCULATOR, NCM_SHIPPING_METHOD_CODE } from "../contstants";
+import { buildWorkbenchRow, WorkbenchRow } from "../util/workbench.util";
 import { codAmountNpr, normaliseNepalPhone, NprRates } from "../util/shipping-price.util";
 import {
   BookedOrder,
@@ -387,6 +388,50 @@ export class NcmService {
       },
     };
   }
+  /**
+   * Paid NCM orders that have not been fulfilled yet, for the admin shipping
+   * workbench. One page at a time. Read only.
+   */
+  async getWorkbench(
+    ctx: RequestContext,
+    opts: { skip?: number; take?: number; onlyBookable?: boolean } = {}
+  ): Promise<{ items: WorkbenchRow[]; totalItems: number }> {
+    const skip = Math.max(0, Math.floor(opts.skip ?? 0));
+    const take = Math.min(100, Math.max(1, Math.floor(opts.take ?? 25)));
+    const rates = await this.getNprRates(ctx);
+
+    const [orders, totalItems] = await this.connection
+      .getRepository(ctx, Order)
+      .createQueryBuilder("order")
+      .innerJoin("order.channels", "channel", "channel.id = :channelId", {
+        channelId: ctx.channelId,
+      })
+      .innerJoinAndSelect("order.shippingLines", "shippingLine")
+      .innerJoinAndSelect("shippingLine.shippingMethod", "shippingMethod")
+      .leftJoinAndSelect("order.customer", "customer")
+      .leftJoinAndSelect("order.payments", "payment")
+      .where("order.active = :active", { active: false })
+      .andWhere("order.state IN (:...states)", {
+        states: ["PaymentSettled", "PaymentAuthorized"],
+      })
+      .andWhere("shippingMethod.code IN (:...codes)", {
+        codes: [NCM_SHIPPING_METHOD_CODE, NCM_SHIPPING_CALCULATOR],
+      })
+      .orderBy("order.orderPlacedAt", "ASC")
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    let items = orders.map((order) =>
+      buildWorkbenchRow(order as any, {
+        rates,
+        addressOk: this.isValidNepalAddress(order),
+      })
+    );
+    if (opts.onlyBookable) items = items.filter((row) => row.canBook);
+    return { items, totalItems };
+  }
+
   /** Orders being booked right now in this process, so two clicks cannot book one order twice. */
   private readonly bookingInFlight = new Set<string>();
 

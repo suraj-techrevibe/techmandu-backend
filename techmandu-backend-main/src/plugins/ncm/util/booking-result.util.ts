@@ -48,3 +48,31 @@ export function failureMessage(result: BookingResult): string {
     : "";
   return `NCM booking failed for ${result.failed.length} of ${total} order(s): ${failedText}.${bookedText}`;
 }
+
+export interface BookingOutcome {
+  orderId: string;
+  orderCode: string;
+  trackingId: string | null;
+  alreadyBooked: boolean;
+  error: string | null;
+}
+
+/** Flat list for the admin API: booked and failed orders in one list. */
+export function toBookingOutcomes(result: BookingResult): BookingOutcome[] {
+  return [
+    ...result.booked.map((b) => ({
+      orderId: String(b.orderId),
+      orderCode: b.orderCode,
+      trackingId: b.trackingId,
+      alreadyBooked: b.alreadyBooked,
+      error: null,
+    })),
+    ...result.failed.map((f) => ({
+      orderId: String(f.orderId),
+      orderCode: f.orderCode,
+      trackingId: null,
+      alreadyBooked: false,
+      error: f.reason,
+    })),
+  ];
+}

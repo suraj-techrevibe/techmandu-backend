@@ -1,0 +1,97 @@
+<vdr-page-block>
+  <vdr-action-bar>
+    <vdr-ab-left>
+      <label class="clr-checkbox-wrapper">
+        <input type="checkbox" clrCheckbox [checked]="onlyBookable" (change)="toggleOnlyBookable()" />
+        <label>Only orders I can book now</label>
+      </label>
+    </vdr-ab-left>
+    <vdr-ab-right>
+      <button class="btn btn-secondary" (click)="load()" [disabled]="loading">Reload</button>
+      <button class="btn btn-primary" (click)="bookAllReady()" [disabled]="!readyRows.length">
+        Book {{ readyRows.length }} ready on this page
+      </button>
+    </vdr-ab-right>
+  </vdr-action-bar>
+
+  <vdr-data-table-2
+    class="mt-2"
+    id="ncm-shipping-workbench"
+    [items]="rows"
+    [itemsPerPage]="itemsPerPage"
+    [totalItems]="totalItems"
+    [currentPage]="currentPage"
+    (pageChange)="setPageNumber($event)"
+    (itemsPerPageChange)="setItemsPerPage($event)"
+  >
+    <vdr-dt2-column heading="Order" id="code">
+      <ng-template let-item="item">
+        <a class="button-ghost" [routerLink]="['/orders', item.orderId]">{{ item.code }}</a>
+        <div class="text-xs text-color-weak">{{ item.placedAt | date: 'short' }}</div>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Recipient" id="recipient">
+      <ng-template let-item="item">
+        <div>{{ item.recipientName || item.customerName || '-' }}</div>
+        <div class="text-xs">
+          {{ item.recipientPhone || 'no phone' }}
+          <vdr-tag [color]="item.phoneValid ? 'success' : 'error'">
+            {{ item.phoneValid ? 'phone ok' : 'phone invalid' }}
+          </vdr-tag>
+        </div>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="NCM branch" id="destination">
+      <ng-template let-item="item">
+        {{ item.destination || 'set when booked' }}
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Cash to collect" id="cash">
+      <ng-template let-item="item">
+        <ng-container *ngIf="item.cashToCollectNpr !== null; else noRate">
+          <vdr-tag [color]="item.cashToCollectNpr === 0 ? 'success' : 'warning'">
+            {{ item.cashToCollectNpr === 0 ? 'Prepaid' : 'Collect' }}
+          </vdr-tag>
+          NPR {{ item.cashToCollectNpr }}
+        </ng-container>
+        <ng-template #noRate><vdr-tag color="error">unknown</vdr-tag></ng-template>
+        <div class="text-xs text-color-weak">Order total {{ money(item.total, item.currencyCode) }}</div>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="NCM tracking" id="tracking">
+      <ng-template let-item="item">
+        <ng-container *ngIf="item.ncmTrackingId; else notBooked">
+          <div>{{ item.ncmTrackingId }}</div>
+          <button class="btn btn-sm btn-link" (click)="checkStatus(item)" [disabled]="item.statusBusy">
+            {{ item.statusBusy ? 'Checking...' : 'Check NCM status' }}
+          </button>
+          <vdr-tag *ngIf="item.status" color="info">{{ item.status }}</vdr-tag>
+        </ng-container>
+        <ng-template #notBooked><span class="text-color-weak">not booked</span></ng-template>
+      </ng-template>
+    </vdr-dt2-column>
+
+    <vdr-dt2-column heading="Action" id="action">
+      <ng-template let-item="item">
+        <div *ngFor="let problem of item.problems" class="text-xs">
+          <vdr-tag color="error">{{ problem }}</vdr-tag>
+        </div>
+        <div *ngIf="item.error" class="text-xs" style="color: var(--color-error-600)">{{ item.error }}</div>
+        <button
+          *ngIf="!item.ncmTrackingId"
+          class="btn btn-sm"
+          [class.btn-primary]="!item.error"
+          [class.btn-danger]="item.error"
+          [disabled]="item.busy || !item.canBook"
+          (click)="book(item)"
+        >
+          {{ item.busy ? 'Booking...' : item.error ? 'Retry' : 'Book with NCM' }}
+        </button>
+      </ng-template>
+    </vdr-dt2-column>
+  </vdr-data-table-2>
+</vdr-page-block>
