@@ -17,7 +17,7 @@
     "migration:revert": "ts-node migration revert",
     "codegen": "graphql-codegen --config codegen.json",
     "prepare": "husky",
-    "test": "echo 'No tests configured yet.' && exit 0",
+    "test": "node --require ts-node/register/transpile-only --test \"src/**/*.test.ts\"",
     "commit": "cz"
   },
   "config": {

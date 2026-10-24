@@ -1,5 +1,6 @@
 import { FulfillmentHandler, Injector, LanguageCode, Logger } from '@vendure/core';
 import { NcmService } from '../service/ncm.service';
+import { formatBookingFailure, summariseBookings } from '../util/booking-report.util';
 
 let ncmService: NcmService;
 export const ncmFullfillmentHandler = new FulfillmentHandler({
@@ -12,18 +13,21 @@ export const ncmFullfillmentHandler = new FulfillmentHandler({
 
     createFulfillment: async (ctx, orders, lines, args) => {
         const orderIds = orders.map(o => o.id);
-        try {
-            const trackingCode = await ncmService.createDelivery(ctx, orderIds);
-            return {
-                method: 'ncm',
-                trackingCode,
-            };
-        } catch (error) {
-            Logger.error(
-                `Failed to create NCM fulfillment: ${error instanceof Error ? error.message : String(error)}`,
-                'ncm-fullfillment-handler'
-            );
-            throw error;
+        const results = await ncmService.createDelivery(ctx, orderIds);
+        const summary = summariseBookings(results);
+
+        if (!summary.ok) {
+            // Nothing is fulfilled until every order has a parcel. Parcels that were booked are saved on
+            // their orders, and booking again skips them, so staff can fix the failures and retry.
+            const message = formatBookingFailure(results);
+            Logger.error(message, 'ncm-fullfillment-handler');
+            throw new Error(message);
         }
+
+        return {
+            method: 'ncm',
+            // One fulfillment can cover several orders, so this holds every tracking id.
+            trackingCode: summary.trackingIds.join(', '),
+        };
     },
 });
