@@ -56,18 +56,21 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     config.customFields.Order.push({
       name: 'destinationBranch',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Destination Branch ' }],
     });
     config.customFields.Order.push({
       name: 'ncmTrackingId',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Ncm Tracking Id' }],
     });
     config.customFields.Order.push({
       name: 'nearestNcmBranch',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Nearest NCM Branch' }],
     });
@@ -151,6 +154,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     config.customFields.Order.push({
     name: 'ncmQuote',
     type: 'text',
+    public: false, // set by the server only; customers must not read or write it through the Shop API
     nullable: true,
     label: [{ languageCode: LanguageCode.en, value: 'NCM Shipping Quote Cache' }],
     });
