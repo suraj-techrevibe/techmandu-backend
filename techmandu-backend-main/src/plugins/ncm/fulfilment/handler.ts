@@ -1,5 +1,6 @@
 import { FulfillmentHandler, Injector, LanguageCode, Logger } from '@vendure/core';
 import { NcmService } from '../service/ncm.service';
+import { failureMessage, trackingCodeOf } from '../util/booking-result.util';
 
 let ncmService: NcmService;
 export const ncmFullfillmentHandler = new FulfillmentHandler({
@@ -13,10 +14,16 @@ export const ncmFullfillmentHandler = new FulfillmentHandler({
     createFulfillment: async (ctx, orders, lines, args) => {
         const orderIds = orders.map(o => o.id);
         try {
-            const trackingCode = await ncmService.createDelivery(ctx, orderIds);
+            const result = await ncmService.createDelivery(ctx, orderIds);
+            // A fulfillment must not be created unless every order is booked.
+            // Orders booked in this attempt keep their tracking id and are
+            // skipped when the admin retries.
+            if (result.failed.length) {
+                throw new Error(failureMessage(result));
+            }
             return {
                 method: 'ncm',
-                trackingCode,
+                trackingCode: trackingCodeOf(result),
             };
         } catch (error) {
             Logger.error(

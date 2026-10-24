@@ -14,7 +14,14 @@ import {
   Logger,
 } from "@vendure/core";
 import { NCM_SHIPPING_CALCULATOR, NCM_SHIPPING_METHOD_CODE } from "../contstants";
+import { buildWorkbenchRow, WorkbenchRow } from "../util/workbench.util";
 import { codAmountNpr, normaliseNepalPhone, NprRates } from "../util/shipping-price.util";
+import {
+  BookedOrder,
+  BookingResult,
+  FailedOrder,
+  dedupeOrderIds,
+} from "../util/booking-result.util";
 
 @Injectable()
 export class NcmService {
@@ -381,175 +388,227 @@ export class NcmService {
       },
     };
   }
-  async createDelivery(ctx: RequestContext, orderIds: ID[]) {
+  /**
+   * Paid NCM orders that have not been fulfilled yet, for the admin shipping
+   * workbench. One page at a time. Read only.
+   */
+  async getWorkbench(
+    ctx: RequestContext,
+    opts: { skip?: number; take?: number; onlyBookable?: boolean } = {}
+  ): Promise<{ items: WorkbenchRow[]; totalItems: number }> {
+    const skip = Math.max(0, Math.floor(opts.skip ?? 0));
+    const take = Math.min(100, Math.max(1, Math.floor(opts.take ?? 25)));
+    const rates = await this.getNprRates(ctx);
+
+    const [orders, totalItems] = await this.connection
+      .getRepository(ctx, Order)
+      .createQueryBuilder("order")
+      .innerJoin("order.channels", "channel", "channel.id = :channelId", {
+        channelId: ctx.channelId,
+      })
+      .innerJoinAndSelect("order.shippingLines", "shippingLine")
+      .innerJoinAndSelect("shippingLine.shippingMethod", "shippingMethod")
+      .leftJoinAndSelect("order.customer", "customer")
+      .leftJoinAndSelect("order.payments", "payment")
+      .where("order.active = :active", { active: false })
+      .andWhere("order.state IN (:...states)", {
+        states: ["PaymentSettled", "PaymentAuthorized"],
+      })
+      .andWhere("shippingMethod.code IN (:...codes)", {
+        codes: [NCM_SHIPPING_METHOD_CODE, NCM_SHIPPING_CALCULATOR],
+      })
+      .orderBy("order.orderPlacedAt", "ASC")
+      .skip(skip)
+      .take(take)
+      .getManyAndCount();
+
+    let items = orders.map((order) =>
+      buildWorkbenchRow(order as any, {
+        rates,
+        addressOk: this.isValidNepalAddress(order),
+      })
+    );
+    if (opts.onlyBookable) items = items.filter((row) => row.canBook);
+    return { items, totalItems };
+  }
+
+  /** Orders being booked right now in this process, so two clicks cannot book one order twice. */
+  private readonly bookingInFlight = new Set<string>();
+
+  /**
+   * Books every order with NCM. One order failing never stops the others.
+   * Orders that already have a tracking id are not sent to NCM again.
+   * Never throws for a single order: read `failed` in the result.
+   */
+  async createDelivery(ctx: RequestContext, orderIds: ID[]): Promise<BookingResult> {
     const channelConfig = await this.getChannelConfig(ctx);
     if (!channelConfig) {
       throw new Error("NCM shipping is not configured for this channel");
     }
 
-    const orderRepo = this.connection.getRepository(ctx, Order);
-    for (const orderId of orderIds) {
-      // const order = await this.loadOrder(ctx, orderId, [
-      //   "customer",
-      //   "shippingLines",
-      //   "shippingLines.shippingMethod",
-      // ]);
-      const order = await orderRepo.findOne({
-        where: { id: orderId },
-        relations: ["lines", "customer", "shippingLines", "shippingLines.shippingMethod", "surcharges", "payments"],
-      });
-      if (!order) {
-        Logger.warn(`Order with ID ${orderId} not found`, "NcmService");
-        continue;
-      }
-      if (!this.orderUsesNcm(order)) {
-        Logger.warn(
-          `Skipping NCM delivery for order ${order.code || orderId} because shipping method is not NCM`,
-          "NcmService"
-        );
-        continue;
-      }
-      if (!this.isValidNepalAddress(order)) {
-        Logger.warn(
-          `Skipping NCM delivery for order ${order.code || orderId} due to non-Nepal shipping address`,
-          "NcmService"
-        );
-        continue;
-      }
+    const result: BookingResult = { booked: [], failed: [] };
+    let rates: NprRates | undefined;
 
-      await this.enrichOrderShippingMeta(ctx, order);
-      const customFields = this.ensureOrderCustomFields(order);
-      const destination =
-        typeof customFields.destinationBranch === "string" &&
-        customFields.destinationBranch.trim()
-          ? customFields.destinationBranch.trim()
-          : typeof customFields.nearestNcmBranch === "string"
-          ? customFields.nearestNcmBranch.trim()
-          : "";
-
-      if (!destination) {
-        Logger.error(
-          `Unable to determine destination branch for order ${
-            order.code || orderId
-          }`,
-          "NcmService"
-        );
+    for (const orderId of dedupeOrderIds(orderIds)) {
+      const key = String(orderId);
+      if (this.bookingInFlight.has(key)) {
+        result.failed.push({
+          orderId,
+          orderCode: key,
+          reason: "a booking for this order is already in progress",
+        });
         continue;
       }
-
-      const addressParts = [
-        order.shippingAddress?.streetLine1,
-        order.shippingAddress?.streetLine2,
-        order.shippingAddress?.city,
-        order.shippingAddress?.province,
-        order.shippingAddress?.countryCode,
-        order.shippingAddress?.postalCode,
-      ]
-        .map((part) => (typeof part === "string" ? part.trim() : part))
-        .filter(Boolean);
-      // NCM calls this number on delivery day, so never send a made-up one.
-      const phone = normaliseNepalPhone(order.shippingAddress?.phoneNumber);
-      if (!phone) {
-        Logger.error(
-          `Order ${order.code || orderId} has no valid recipient phone number. NCM needs one to deliver.`,
-          "NcmService"
-        );
-        continue;
-      }
-      const backupPhone = normaliseNepalPhone(order.customer?.phoneNumber);
-
-      // Prepaid orders must ask the recipient for 0. Only cash on delivery (or an unpaid rest) is collected.
-      const codCharge = codAmountNpr(
-        order.totalWithTax,
-        order.currencyCode,
-        order.payments ?? [],
-        await this.getNprRates(ctx)
-      );
-      if (codCharge === undefined) {
-        Logger.error(
-          `Order ${order.code || orderId}: cash to collect cannot be worked out, no exchange rate for ${order.currencyCode}`,
-          "NcmService"
-        );
-        continue;
-      }
-
-      const params = {
-        name: order.shippingAddress.fullName ??
-        `${order.customer?.firstName ?? "Techmandu"}
-         ${order.customer?.lastName ?? ""}`.trim() 
-         ?? "unknown",
-         // remove initial +977 if present
-        phone,
-        ...(backupPhone && backupPhone !== phone ? { phone2: backupPhone } : {}),
-        cod_charge: codCharge,
-        address: addressParts.join(", "),
-        fbranch: channelConfig.creationBranch,
-        branch: destination,
-        package: "PackageType",
-        vref_id: `${order.id}`,
-        instruction: "Delivery Instructions",
-      };      
-      // console.log(params)
-      // console.log(`${this.ncmApiBase}/api/v1/order/create`)
-      // console.log(`Token ${channelConfig.apiKey}`)
+      this.bookingInFlight.add(key);
       try {
-        
-        const response = await axios.post(
-          `${this.ncmApiBase}/api/v1/order/create`,
-          params,
-          {
-            headers: {
-              Authorization: `Token ${channelConfig.apiKey}`,
-            },
-            timeout: 10000,
-          }
-        );
-
-
-        const trackingId = response.data?.orderid;
-        // if (typeof trackingId !== "string" || !trackingId.trim()) {
-        //   Logger.error(
-        //     `NCM order/create returned invalid tracking id for order ${
-        //       order.code || orderId
-        //     }`,
-        //     "NcmService"
-        //   );
-        //   continue;
-        // }
-        if (!trackingId || response.data.Message != 'Order Successfully Created'){
-          throw new Error(`NCM order/create failed: ${response.data?.Message || 'No tracking ID returned'}`);
-        }
-        const safeTrackingId=trackingId as string;
-        order.customFields.ncmTrackingId = safeTrackingId;
-        await orderRepo.save(order);
-        return safeTrackingId;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          // console.log(error)
-          const status = error.response?.status;
-
-          const remoteMessage =
-            error.response?.data?.Message ||
-            error.response?.data?.detail ||
-            error.message;
-          Logger.error(
-            `NCM order/create failed for order ${
-              order.code || orderId
-            } (${status ?? "no-status"}): ${remoteMessage}`,
-            "NcmService"
-          );
+        rates = rates ?? (await this.getNprRates(ctx));
+        const outcome = await this.bookOrder(ctx, orderId, channelConfig, rates);
+        if (outcome.ok) {
+          result.booked.push(outcome.booked);
         } else {
-          Logger.error(
-            `Unexpected error creating NCM delivery for order ${
-              order.code || orderId
-            }: ${error instanceof Error ? error.message : String(error)}`,
-            "NcmService"
-          );
+          result.failed.push(outcome.failed);
         }
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        Logger.error(`Unexpected error booking order ${key}: ${reason}`, "NcmService");
+        result.failed.push({ orderId, orderCode: key, reason });
+      } finally {
+        this.bookingInFlight.delete(key);
       }
     }
+    return result;
+  }
 
-    throw new Error("Failed to create NCM delivery for the provided orders");
+  private async bookOrder(
+    ctx: RequestContext,
+    orderId: ID,
+    channelConfig: { apiKey: string; creationBranch: string },
+    rates: NprRates
+  ): Promise<
+    | { ok: true; booked: BookedOrder }
+    | { ok: false; failed: FailedOrder }
+  > {
+    const orderRepo = this.connection.getRepository(ctx, Order);
+    const fail = (orderCode: string, reason: string) => {
+      Logger.error(`NCM booking skipped for order ${orderCode}: ${reason}`, "NcmService");
+      return { ok: false as const, failed: { orderId, orderCode, reason } };
+    };
+
+    const order = await orderRepo.findOne({
+      where: { id: orderId },
+      relations: ["lines", "customer", "shippingLines", "shippingLines.shippingMethod", "surcharges", "payments"],
+    });
+    if (!order) {
+      return fail(String(orderId), "order not found");
+    }
+    const code = order.code || String(orderId);
+
+    // Never book the same order twice.
+    const existing = (order.customFields as any)?.ncmTrackingId;
+    if (typeof existing === "string" && existing.trim()) {
+      return {
+        ok: true,
+        booked: { orderId, orderCode: code, trackingId: existing.trim(), alreadyBooked: true },
+      };
+    }
+
+    if (!this.orderUsesNcm(order)) {
+      return fail(code, "shipping method is not NCM");
+    }
+    if (!this.isValidNepalAddress(order)) {
+      return fail(code, "shipping address is not a complete Nepal address");
+    }
+
+    await this.enrichOrderShippingMeta(ctx, order);
+    const customFields = this.ensureOrderCustomFields(order);
+    const destination =
+      typeof customFields.destinationBranch === "string" && customFields.destinationBranch.trim()
+        ? customFields.destinationBranch.trim()
+        : typeof customFields.nearestNcmBranch === "string"
+        ? customFields.nearestNcmBranch.trim()
+        : "";
+    if (!destination) {
+      return fail(code, "no destination branch could be worked out");
+    }
+
+    const addressParts = [
+      order.shippingAddress?.streetLine1,
+      order.shippingAddress?.streetLine2,
+      order.shippingAddress?.city,
+      order.shippingAddress?.province,
+      order.shippingAddress?.countryCode,
+      order.shippingAddress?.postalCode,
+    ]
+      .map((part) => (typeof part === "string" ? part.trim() : part))
+      .filter(Boolean);
+
+    // NCM calls this number on delivery day, so never send a made-up one.
+    const phone = normaliseNepalPhone(order.shippingAddress?.phoneNumber);
+    if (!phone) {
+      return fail(code, "no valid recipient phone number");
+    }
+    const backupPhone = normaliseNepalPhone(order.customer?.phoneNumber);
+
+    // Prepaid orders must ask the recipient for 0. Only cash on delivery (or an unpaid rest) is collected.
+    const codCharge = codAmountNpr(
+      order.totalWithTax,
+      order.currencyCode,
+      order.payments ?? [],
+      rates
+    );
+    if (codCharge === undefined) {
+      return fail(code, `cash to collect cannot be worked out, no exchange rate for ${order.currencyCode}`);
+    }
+
+    const params = {
+      name:
+        order.shippingAddress.fullName ??
+        `${order.customer?.firstName ?? "Techmandu"} ${order.customer?.lastName ?? ""}`.trim(),
+      phone,
+      ...(backupPhone && backupPhone !== phone ? { phone2: backupPhone } : {}),
+      cod_charge: codCharge,
+      address: addressParts.join(", "),
+      fbranch: channelConfig.creationBranch,
+      branch: destination,
+      package: "PackageType",
+      vref_id: `${order.id}`,
+      instruction: "Delivery Instructions",
+    };
+
+    let trackingId: string;
+    try {
+      const response = await axios.post(`${this.ncmApiBase}/api/v1/order/create`, params, {
+        headers: { Authorization: `Token ${channelConfig.apiKey}` },
+        timeout: 10000,
+      });
+      const returned = response.data?.orderid;
+      if (!returned || response.data.Message != "Order Successfully Created") {
+        throw new Error(`NCM order/create failed: ${response.data?.Message || "No tracking ID returned"}`);
+      }
+      trackingId = String(returned);
+    } catch (error) {
+      let reason: string;
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const remote = error.response?.data?.Message || error.response?.data?.detail || error.message;
+        reason = `NCM error ${status ?? "no-status"}: ${remote}`;
+      } else {
+        reason = error instanceof Error ? error.message : String(error);
+      }
+      return fail(code, reason);
+    }
+
+    try {
+      await orderRepo.update(order.id, { customFields: { ncmTrackingId: trackingId } });
+    } catch (error) {
+      // The parcel exists at NCM but we could not store its id. Say so loudly:
+      // a retry would book it a second time.
+      const reason = `booked at NCM as ${trackingId} but saving the tracking id failed (${
+        error instanceof Error ? error.message : String(error)
+      }). Save ${trackingId} on the order by hand and do NOT retry`;
+      return fail(code, reason);
+    }
+    return { ok: true, booked: { orderId, orderCode: code, trackingId, alreadyBooked: false } };
   }
   async getOrderStatus(ctx: RequestContext, orderId: ID): Promise<any> {
     const channelConfig = await this.getChannelConfig(ctx);

@@ -13,6 +13,8 @@ import { NcmService } from './service/ncm.service';
 import { ncmFullfillmentHandler } from './fulfilment/handler';
 import { shopApiExtension } from './api/api.extention';
 import { NcmResolver } from './resolver/ncm.resolver';
+import { NcmAdminResolver } from './resolver/ncm-admin.resolver';
+import { adminApiExtension } from './api/admin-api.extension';
 import { insideValleyChecker, ncmChecker } from './checker/checker';
 import { NcmEventHandler } from './events/ncm-event-handler';
 import path from 'path';
@@ -45,6 +47,10 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     schema: shopApiExtension,
     resolvers: [NcmResolver],
   },
+  adminApiExtensions: {
+    schema: adminApiExtension,
+    resolvers: [NcmAdminResolver],
+  },
 
   configuration: (config) => {
     config.customFields.GlobalSettings.push({
@@ -56,18 +62,21 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     config.customFields.Order.push({
       name: 'destinationBranch',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Destination Branch ' }],
     });
     config.customFields.Order.push({
       name: 'ncmTrackingId',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Ncm Tracking Id' }],
     });
     config.customFields.Order.push({
       name: 'nearestNcmBranch',
       type: 'string',
+      public: false, // set by the server only; customers must not read or write it through the Shop API
       nullable: true,
       label: [{ languageCode: LanguageCode.en, value: 'Nearest NCM Branch' }],
     });
@@ -151,6 +160,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     config.customFields.Order.push({
     name: 'ncmQuote',
     type: 'text',
+    public: false, // set by the server only; customers must not read or write it through the Shop API
     nullable: true,
     label: [{ languageCode: LanguageCode.en, value: 'NCM Shipping Quote Cache' }],
     });
@@ -175,6 +185,7 @@ export class NcmPlugin {
   static ui: AdminUiExtension = {
     id: 'ncm-plugin',
     extensionPath: path.join(__dirname, 'ui'),
+    routes: [{ route: 'shipping-workbench', filePath: 'routes.ts' }],
     providers: ['providers.ts'],
   };
 }
