@@ -23,6 +23,7 @@ import {
 } from "@vendure/core";
 import { populate } from "@vendure/core/cli";
 import { initialData } from "./initial";
+import { shippingMethodsForEnv } from "./seed-shipping.util";
 import { config } from "../src/vendure-config";
 import { SearchIndexService } from "@vendure/core/dist/plugin/default-search-plugin/indexer/search-index.service";
 import { parse } from "csv-parse/sync";
@@ -64,7 +65,15 @@ async function populateServer() {
   const ctx = await getSuperadminContext(app);
 
   // 1️⃣ Normal Vendure populate (variants get created)
-  await populate(() => Promise.resolve(app), initialData, CSV_PATH);
+  // Demo flat-rate shipping methods are dev only. See seed-shipping.util.ts.
+  const seedData = {
+    ...initialData,
+    shippingMethods: shippingMethodsForEnv(initialData.shippingMethods, process.env.APP_ENV),
+  };
+  if (process.env.APP_ENV?.trim().toLowerCase() !== "dev") {
+    console.log("ℹ️ APP_ENV is not dev: skipping demo shipping methods. Create NCM / Inside Valley / Pickup in the admin.");
+  }
+  await populate(() => Promise.resolve(app), seedData, CSV_PATH);
 
   // 2️⃣ Populate struct[] custom field manually
   await populateVariantSpecifications(ctx, app.get(TransactionalConnection));
